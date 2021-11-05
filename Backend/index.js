@@ -113,6 +113,217 @@ app.post('/signin', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /createEntry:
+ *   post:
+ *     summary: Create New Data Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FID:
+ *                 type: integer
+ *                 description: Entry Unique Identifier
+ *               Id:
+ *                 type: string
+ *                 description: Unique Identifier
+ *               Comments:
+ *                 type: string
+ *                 description: Comments
+ *               ImageID:
+ *                 type: string
+ *                 description: Image ID
+ *               ImageDat:
+ *                 type: string
+ *                 description: Image Date
+ *               Link:
+ *                 type: string
+ *                 description: Link
+ *               XY:
+ *                 type: string
+ *                 description: Coordinates
+ *               Section:
+ *                 type: string
+ *                 description: Section
+ *               OnStreet:
+ *                 type: string
+ *                 description: Street
+ *               CrossStreet1:
+ *                 type: string
+ *                 description: Cross Street
+ *               CrossStreet2:
+ *                 type: string
+ *                 description: Cross Street
+ *               PostType:
+ *                 type: string
+ *                 description: Light Post Type
+ *               PedestrianArm:
+ *                 type: boolean
+ *                 description: Contains Pedestrian Arm
+ *               NoArms:
+ *                 type: integer
+ *                 description: Number of Arms
+ *               PostColor:
+ *                 type: string
+ *                 description: Color of Lamp Post
+ *               LuminaireType:
+ *                 type: string
+ *                 description: Type of Luminaire
+ *               TeardropType:
+ *                 type: string
+ *                 description: Teardrop Type
+ *               AttachmentType1:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType2:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType3:
+ *                 type: string
+ *                 description: Attachment
+ *     responses:
+ *      '200':
+ *        description: Successfully Created.
+ *      '400':
+ *        description: Id Already Exists.
+*/
+
+// app.post('/createEntry', async (req, res) => {
+
+// });
+
+/**
+ * @swagger
+ * /getSection:
+ *   post:
+ *     summary: Returns All Data of a Single Section
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               Section:
+ *                 type: string
+ *                 description: Section letter
+ *     responses:
+ *      '200':
+ *        description: Successfully Returned Section Data.
+ *      '400':
+ *        description: Section Not Found.
+*/
+
+// app.post('/getSection', async (req, res) => {
+
+// });
+
+/**
+ * @swagger
+ * /updateEntry:
+ *   put:
+ *     summary: Update Data Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FID:
+ *                 type: integer
+ *                 description: Entry Unique Identifier
+ *               Id:
+ *                 type: string
+ *                 description: Unique Identifier
+ *               Comments:
+ *                 type: string
+ *                 description: Comments
+ *               ImageID:
+ *                 type: string
+ *                 description: Image ID
+ *               ImageDat:
+ *                 type: string
+ *                 description: Image Date
+ *               Link:
+ *                 type: string
+ *                 description: Link
+ *               XY:
+ *                 type: string
+ *                 description: Coordinates
+ *               Section:
+ *                 type: string
+ *                 description: Section
+ *               OnStreet:
+ *                 type: string
+ *                 description: Street
+ *               CrossStreet1:
+ *                 type: string
+ *                 description: Cross Street
+ *               CrossStreet2:
+ *                 type: string
+ *                 description: Cross Street
+ *               PostType:
+ *                 type: string
+ *                 description: Light Post Type
+ *               PedestrianArm:
+ *                 type: boolean
+ *                 description: Contains Pedestrian Arm
+ *               NoArms:
+ *                 type: integer
+ *                 description: Number of Arms
+ *               PostColor:
+ *                 type: string
+ *                 description: Color of Lamp Post
+ *               LuminaireType:
+ *                 type: string
+ *                 description: Type of Luminaire
+ *               TeardropType:
+ *                 type: string
+ *                 description: Teardrop Type
+ *               AttachmentType1:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType2:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType3:
+ *                 type: string
+ *                 description: Attachment
+ *     responses:
+ *      '200':
+ *        description: Successfully Updated
+*/
+
+// app.put('/updateEntry', async (req, res) => {
+
+// });
+
+/**
+ * @swagger
+ * /deleteEntry:
+ *   delete:
+ *     summary: Delete Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               Id:
+ *                 type: string
+ *                 description: Entry Id.
+ *     responses:
+ *      '200':
+ *        description: Successfully Deleted.
+ *      '400':
+ *        description: Entry Not Found.
+*/
+
+// app.delete('/deleteEntry', async(req, res) => {
+
+// });
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
