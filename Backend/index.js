@@ -4,6 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const User = require('./Models/User');
+const Data = require('./Models/Data');
 
 /////////////CONNECT TO DB////////////////
 mongoose.connect(process.env.DB_CONNECTION, ()=>{
