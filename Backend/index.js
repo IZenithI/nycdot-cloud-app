@@ -333,8 +333,8 @@ app.post('/createEntry', async (req, res) => {
 
 app.post('/getSection', async (req, res) => {
     const sectionEntries = await Data.find({ 'Section': req.body.Section }).exec();
-
-    if(sectionEntries){
+    
+    if(sectionEntries.length > 0){
         res.status(200).send(sectionEntries);
     }
     else{
