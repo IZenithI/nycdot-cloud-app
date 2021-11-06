@@ -75,12 +75,12 @@ app.post('/signup', async (req, res) => {
         let email = req.body.email.toLowerCase();
         let role = req.body.role.toLowerCase();
 
-        const user = new User({
+        const newUser = new User({
             email: email,
             role: role
-        })
+        });
         
-        const savedUser = await user.save();
+        const savedUser = await newUser.save();
 
         res.status(200).send(savedUser.email + " Successfully Signed Up");
     }
@@ -125,7 +125,7 @@ app.post('/signin', async (req, res) => {
         res.status(404).send("User is not found");
     }
 });
-
+{
 /**
  * @swagger
  * /createEntry:
@@ -174,7 +174,7 @@ app.post('/signin', async (req, res) => {
  *                 type: string
  *                 description: Light Post Type
  *               PedestrianArm:
- *                 type: boolean
+ *                 type: string
  *                 description: Contains Pedestrian Arm
  *               NoArms:
  *                 type: integer
@@ -202,11 +202,43 @@ app.post('/signin', async (req, res) => {
  *        description: Successfully Created.
  *      '400':
  *        description: Id Already Exists.
-*/
+*/}
 
-// app.post('/createEntry', async (req, res) => {
+app.post('/createEntry', async (req, res) => {
+    const data = await Data.findOne({ 'Id': req.body.Id }).exec();
 
-// });
+    if(data){
+        res.status(400).send("Entry Already Exists");
+    }
+    else{
+        const newData = new Data({
+            FID: req.body.FID,
+            Id: req.body.Id,
+            Comments: req.body.Comments,
+            ImageID: req.body.ImageID,
+            ImageDat: req.body.ImageDat,
+            Link: req.body.Link,
+            XY: req.body.XY,
+            Section: req.body.Section,
+            OnStreet: req.body.OnStreet,
+            CrossStreet1: req.body.CrossStreet1,
+            CrossStreet2: req.body.CrossStreet2,
+            PostType: req.body.PostType,
+            PedestrianArm: req.body.PedestrianArm,
+            NoArms: req.body.NoArms,
+            PostColor: req.body.PostColor,
+            LuminaireType: req.body.LuminaireType,
+            TeardropType: req.body.TeardropType,
+            AttachmentType1: req.body.AttachmentType1,
+            AttachmentType2: req.body.AttachmentType2,
+            AttachmentType3: req.body.AttachmentType3
+        });
+
+        const newSavedData = await newData.save();
+
+        res.status(200).send("Created Successfully");
+    }
+});
 
 /**
  * @swagger
@@ -272,7 +304,7 @@ app.post('/signin', async (req, res) => {
  *                        type: string
  *                        description: Light Post Type
  *                      PedestrianArm:
- *                        type: boolean
+ *                        type: string
  *                        description: Contains Pedestrian Arm
  *                      NoArms:
  *                        type: integer
@@ -299,9 +331,17 @@ app.post('/signin', async (req, res) => {
  *        description: Section Not Found.
 */
 
-// app.post('/getSection', async (req, res) => {
+app.post('/getSection', async (req, res) => {
+    const sectionEntries = await Data.find({ 'Section': req.body.Section }).exec();
 
-// });
+    if(sectionEntries){
+        res.status(200).send(sectionEntries);
+    }
+    else{
+        res.status(400).send("Section Not Found");
+    }
+
+});
 
 /**
  * @swagger
@@ -351,7 +391,7 @@ app.post('/signin', async (req, res) => {
  *                 type: string
  *                 description: Light Post Type
  *               PedestrianArm:
- *                 type: boolean
+ *                 type: string
  *                 description: Contains Pedestrian Arm
  *               NoArms:
  *                 type: integer
@@ -376,12 +416,45 @@ app.post('/signin', async (req, res) => {
  *                 description: Attachment
  *     responses:
  *      '200':
- *        description: Successfully Updated
+ *        description: Successfully Updated.
+ *      '400':
+ *        description: Data Does Not Exist.
 */
 
-// app.put('/updateEntry', async (req, res) => {
+app.put('/updateEntry', async (req, res) => {
+    const dataToUpdate = await Data.findOne({ 'Id': req.body.Id }).exec();
 
-// });
+    if(dataToUpdate){
+        dataToUpdate.FID = req.body.FID;
+        dataToUpdate.Id = req.body.Id;
+        dataToUpdate.Comments = req.body.Comments;
+        dataToUpdate.ImageID = req.body.ImageID;
+        dataToUpdate.ImageDat = req.body.ImageDat;
+        dataToUpdate.Link = req.body.Link;
+        dataToUpdate.XY = req.body.XY;
+        dataToUpdate.Section = req.body.Section;
+        dataToUpdate.OnStreet = req.body.OnStreet;
+        dataToUpdate.CrossStreet1 = req.body.CrossStreet1;
+        dataToUpdate.CrossStreet2 = req.body.CrossStreet2;
+        dataToUpdate.PostType = req.body.PostType;
+        dataToUpdate.PedestrianArm = req.body.PedestrianArm;
+        dataToUpdate.NoArms = req.body.NoArms;
+        dataToUpdate.PostColor = req.body.PostColor;
+        dataToUpdate.LuminaireType = req.body.LuminaireType;
+        dataToUpdate.TeardropType = req.body.TeardropType;
+        dataToUpdate.AttachmentType1 = req.body.AttachmentType1;
+        dataToUpdate.AttachmentType2 = req.body.AttachmentType2;
+        dataToUpdate.AttachmentType3 = req.body.AttachmentType3;
+
+        await dataToUpdate.save();
+
+        res.status(200).send("Successfully Updated")
+    }
+    else{
+        res.status(400).send("Data Does Not Exist")
+    }
+    
+});
 
 /**
  * @swagger
@@ -404,12 +477,28 @@ app.post('/signin', async (req, res) => {
  *      '200':
  *        description: Successfully Deleted.
  *      '400':
- *        description: Entry Not Found or Not Enough Permissions.
+ *        description: Entry Does Not Exist.
+ *      '401':
+ *        description: Invalid Permission.
 */
 
-// app.delete('/deleteEntry', async(req, res) => {
+app.delete('/deleteEntry', async(req, res) => {
+    if(req.body.role == "admin"){
+        const data = await Data.find({ 'Id': req.body.Id }).exec();
 
-// });
+        if(data){
+            await Data.deleteOne({ 'Id': req.body.Id });
+
+            res.status(200).send("Successfully Deleted");
+        }
+        else{
+            res.status(400).send("Entry Does Not Exist");
+        }
+    }
+    else{
+        res.status(401).send("Invalid Permission");
+    }
+});
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
