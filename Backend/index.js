@@ -66,16 +66,18 @@ app.get('/', function(req, res){
 */
 
 app.post('/signup', async (req, res) => {
-    const user = await User.findOne({ 'email': req.body.email }).exec();
+    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
 
     if(user){
         res.status(400).send("Already Signed Up");
     }
     else{
-        let email = req.body.email;
+        let email = req.body.email.toLowerCase();
+        let role = req.body.role.toLowerCase();
 
         const user = new User({
-            email: email
+            email: email,
+            role: role
         })
         
         const savedUser = await user.save();
@@ -114,10 +116,10 @@ app.post('/signup', async (req, res) => {
 */
 
 app.post('/signin', async (req, res) => {
-    const user = await User.findOne({ 'email': req.body.email }).exec();
+    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
 
     if(user){
-        res.status(200).send("Success");
+        res.status(200).send(user.role);
     }
     else{
         res.status(404).send("User is not found");
