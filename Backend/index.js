@@ -55,6 +55,9 @@ app.get('/', function(req, res){
  *               email:
  *                 type: string
  *                 description: The user's email.
+ *               role:
+ *                 type: string
+ *                 description: The user's role (admin or intern).
  *     responses:
  *      '200':
  *        description: Successfully Signed Up.
@@ -98,6 +101,14 @@ app.post('/signup', async (req, res) => {
  *     responses:
  *      '200':
  *        description: Successfully Logged In.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                role:
+ *                  type: string
+ *                  description: Role of User (admin or intern).
  *      '400':
  *        description: User is not found.
 */
@@ -212,6 +223,76 @@ app.post('/signin', async (req, res) => {
  *     responses:
  *      '200':
  *        description: Successfully Returned Section Data.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                sectionEntries:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                    properties:
+ *                      FID:
+ *                        type: integer
+ *                        description: Entry Unique Identifier
+ *                      Id:
+ *                        type: string
+ *                        description: Unique Identifier
+ *                      Comments:
+ *                        type: string
+ *                        description: Comments
+ *                      ImageID:
+ *                        type: string
+ *                        description: Image ID
+ *                      ImageDat:
+ *                        type: string
+ *                        description: Image Date
+ *                      Link:
+ *                        type: string
+ *                        description: Link
+ *                      XY:
+ *                        type: string
+ *                        description: Coordinates
+ *                      Section:
+ *                        type: string
+ *                        description: Section
+ *                      OnStreet:
+ *                        type: string
+ *                        description: Street
+ *                      CrossStreet1:
+ *                        type: string
+ *                        description: Cross Street
+ *                      CrossStreet2:
+ *                        type: string
+ *                        description: Cross Street
+ *                      PostType:
+ *                        type: string
+ *                        description: Light Post Type
+ *                      PedestrianArm:
+ *                        type: boolean
+ *                        description: Contains Pedestrian Arm
+ *                      NoArms:
+ *                        type: integer
+ *                        description: Number of Arms
+ *                      PostColor:
+ *                        type: string
+ *                        description: Color of Lamp Post
+ *                      LuminaireType:
+ *                        type: string
+ *                        description: Type of Luminaire
+ *                      TeardropType:
+ *                        type: string
+ *                        description: Teardrop Type
+ *                      AttachmentType1:
+ *                        type: string
+ *                        description: Attachment
+ *                      AttachmentType2:
+ *                        type: string
+ *                        description: Attachment
+ *                      AttachmentType3:
+ *                        type: string
+ *                        description: Attachment
  *      '400':
  *        description: Section Not Found.
 */
@@ -314,11 +395,14 @@ app.post('/signin', async (req, res) => {
  *               Id:
  *                 type: string
  *                 description: Entry Id.
+ *               role:
+ *                 type: string
+ *                 description: User's role (admin or intern).
  *     responses:
  *      '200':
  *        description: Successfully Deleted.
  *      '400':
- *        description: Entry Not Found.
+ *        description: Entry Not Found or Not Enough Permissions.
 */
 
 // app.delete('/deleteEntry', async(req, res) => {
