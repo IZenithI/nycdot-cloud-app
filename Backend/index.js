@@ -483,9 +483,10 @@ app.put('/updateEntry', async (req, res) => {
 */
 
 app.delete('/deleteEntry', async(req, res) => {
+    console.log(req.body.role);
     if(req.body.role == "admin"){
         const data = await Data.find({ 'Id': req.body.Id }).exec();
-
+        console.log(data);
         if(data){
             await Data.deleteOne({ 'Id': req.body.Id });
 
