@@ -482,7 +482,7 @@ app.put('/updateEntry', async (req, res) => {
  *        description: Invalid Permission.
 */
 
-app.delete('/deleteEntry', async(req, res) => {
+app.post('/deleteEntry', async(req, res) => {
     console.log("role: " + req.body.role);
     console.log("Id: " + req.body.Id);
     if(req.body.role == "admin"){
