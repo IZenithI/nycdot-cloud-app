@@ -41,6 +41,7 @@ app.get('/', function(req, res){
     res.send('Hello World!');
 });
 
+{
 /**
  * @swagger
  * /signup:
@@ -64,6 +65,7 @@ app.get('/', function(req, res){
  *      '400':
  *        description: Already Signed Up.
 */
+}
 
 app.post('/signup', async (req, res) => {
     const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
@@ -86,6 +88,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+{
 /**
  * @swagger
  * /signin:
@@ -114,6 +117,7 @@ app.post('/signup', async (req, res) => {
  *      '400':
  *        description: User is not found.
 */
+}
 
 app.post('/signin', async (req, res) => {
     const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
@@ -125,6 +129,7 @@ app.post('/signin', async (req, res) => {
         res.status(404).send("User is not found");
     }
 });
+
 {
 /**
  * @swagger
@@ -202,7 +207,8 @@ app.post('/signin', async (req, res) => {
  *        description: Successfully Created.
  *      '400':
  *        description: Id Already Exists.
-*/}
+*/
+}
 
 app.post('/createEntry', async (req, res) => {
     const data = await Data.findOne({ 'Id': req.body.Id }).exec();
@@ -240,6 +246,7 @@ app.post('/createEntry', async (req, res) => {
     }
 });
 
+{
 /**
  * @swagger
  * /getSection:
@@ -330,6 +337,7 @@ app.post('/createEntry', async (req, res) => {
  *      '400':
  *        description: Section Not Found.
 */
+}
 
 app.post('/getSection', async (req, res) => {
     const sectionEntries = await Data.find({ 'Section': req.body.Section }).exec();
@@ -343,6 +351,7 @@ app.post('/getSection', async (req, res) => {
 
 });
 
+{
 /**
  * @swagger
  * /updateEntry:
@@ -420,6 +429,7 @@ app.post('/getSection', async (req, res) => {
  *      '400':
  *        description: Data Does Not Exist.
 */
+}
 
 app.put('/updateEntry', async (req, res) => {
     const dataToUpdate = await Data.findOne({ 'Id': req.body.Id }).exec();
@@ -456,10 +466,11 @@ app.put('/updateEntry', async (req, res) => {
     
 });
 
+{
 /**
  * @swagger
  * /deleteEntry:
- *   delete:
+ *   post:
  *     summary: Delete Entry
  *     requestBody:
  *       content:
@@ -481,6 +492,7 @@ app.put('/updateEntry', async (req, res) => {
  *      '401':
  *        description: Invalid Permission.
 */
+}
 
 app.post('/deleteEntry', async(req, res) => {
     console.log("role: " + req.body.role);
@@ -501,6 +513,63 @@ app.post('/deleteEntry', async(req, res) => {
         res.status(401).send("Invalid Permission");
     }
 });
+
+{
+/**
+ * @swagger
+ * /assignTask:
+ *   post:
+ *     summary: Task Assignment
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Email to assign task to.
+ *               task:
+ *                 type: string
+ *                 description: Task to assign to user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Assigned.
+ *      '400':
+ *        description: Email Does Not Exist.
+*/
+}
+
+// app.post('/assignTask', async(req, res) => {
+
+// });
+
+{
+/**
+ * @swagger
+ * /getTask:
+ *   post:
+ *     summary: Get Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Email of user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Retrieved.
+ *      '400':
+ *        description: Email Does Not Exist.
+*/
+}
+
+// app.post('/getTask', async(req, res) => {
+
+// });
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
