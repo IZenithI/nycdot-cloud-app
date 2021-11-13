@@ -555,7 +555,7 @@ app.post('/assignTask', async(req, res) => {
     else{
         let senderEmail = req.body.senderEmail.toLowerCase();
         let targetEmail = req.body.targetEmail.toLowerCase();
-        let task = req.body.task.toLowerCase();
+        let task = req.body.task;
 
         const sender = await User.findOne({ 'email': senderEmail }).exec();
 
