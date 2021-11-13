@@ -541,6 +541,8 @@ app.post('/deleteEntry', async(req, res) => {
  *        description: Successfully Assigned.
  *      '400':
  *        description: Already has a task.
+ *      '401':
+ *        description: Invalid Permission.
 */
 }
 
@@ -555,15 +557,22 @@ app.post('/assignTask', async(req, res) => {
         let targetEmail = req.body.targetEmail.toLowerCase();
         let task = req.body.task.toLowerCase();
 
-        const newTask = new Task({
-            senderEmail: senderEmail,
-            targetEmail: targetEmail,
-            task: task
-        });
-        
-        await newTask.save();
+        const sender = await Task.findOne({ 'email': senderEmail }).exec();
 
-        res.status(200).send("Assigned Successfully");
+        if(sender.role == 'admin'){
+            const newTask = new Task({
+                senderEmail: senderEmail,
+                targetEmail: targetEmail,
+                task: task
+            });
+            
+            await newTask.save();
+
+            res.status(200).send("Assigned Successfully");
+        }
+        else{
+            res.status(401).send("Invalid Permission");
+        }
     }
 });
 
