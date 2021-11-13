@@ -609,5 +609,40 @@ app.post('/getTask', async(req, res) => {
     }
 });
 
+{
+/**
+ * @swagger
+ * /completeTask:
+ *   post:
+ *     summary: Complete Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetEmail:
+ *                 type: string
+ *                 description: User email for task to delete.
+ *     responses:
+ *      '200':
+ *        description: Successfully Deleted.
+ *      '400':
+ *        description: User does not have a task.
+*/
+}
+
+app.post('/completeTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
+
+    if(task){
+        await Task.deleteOne({ 'targetEmail': req.body.targetEmail });
+        res.status(400).send("Successfully Deleted");
+    }
+    else{
+        res.status(400).send("User does not have a task.");
+    }
+});
+
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
