@@ -598,9 +598,16 @@ app.post('/assignTask', async(req, res) => {
 */
 }
 
-// app.post('/getTask', async(req, res) => {
+app.post('/getTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
 
-// });
+    if(task){
+        res.status(400).send(task.task);
+    }
+    else{
+        res.status(400).send("User does not have a task.");
+    }
+});
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
