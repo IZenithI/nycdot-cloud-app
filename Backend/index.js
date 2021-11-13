@@ -557,22 +557,31 @@ app.post('/assignTask', async(req, res) => {
         let targetEmail = req.body.targetEmail.toLowerCase();
         let task = req.body.task;
 
-        const sender = await User.findOne({ 'email': senderEmail }).exec();
+        // const sender = await User.findOne({ 'email': senderEmail }).exec();
 
-        if(sender.role == 'admin'){
-            const newTask = new Task({
-                senderEmail: senderEmail,
-                targetEmail: targetEmail,
-                task: task
-            });
+        // if(sender.role == 'admin'){
+        //     const newTask = new Task({
+        //         senderEmail: senderEmail,
+        //         targetEmail: targetEmail,
+        //         task: task
+        //     });
             
-            await newTask.save();
+        //     await newTask.save();
 
-            res.status(200).send("Assigned Successfully");
-        }
-        else{
-            res.status(401).send("Invalid Permission");
-        }
+        //     res.status(200).send("Assigned Successfully");
+        // }
+        // else{
+        //     res.status(401).send("Invalid Permission");
+        // }
+        const newTask = new Task({
+            senderEmail: senderEmail,
+            targetEmail: targetEmail,
+            task: task
+        });
+        
+        await newTask.save();
+
+        res.status(200).send("Assigned Successfully");
     }
 });
 
