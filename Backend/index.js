@@ -557,7 +557,7 @@ app.post('/assignTask', async(req, res) => {
         let targetEmail = req.body.targetEmail.toLowerCase();
         let task = req.body.task.toLowerCase();
 
-        const sender = await Task.findOne({ 'email': senderEmail }).exec();
+        const sender = await User.findOne({ 'email': senderEmail }).exec();
 
         if(sender.role == 'admin'){
             const newTask = new Task({
