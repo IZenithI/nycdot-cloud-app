@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const User = require('./Models/User');
 const Data = require('./Models/Data');
+const Task = require('./Models/Task');
 
 /////////////CONNECT TO DB////////////////
 mongoose.connect(process.env.DB_CONNECTION, ()=>{
@@ -526,7 +527,10 @@ app.post('/deleteEntry', async(req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               senderEmail:
+ *                 type: string
+ *                 description: Email of sender of task.
+ *               targetEmail:
  *                 type: string
  *                 description: Email to assign task to.
  *               task:
@@ -536,13 +540,32 @@ app.post('/deleteEntry', async(req, res) => {
  *      '200':
  *        description: Successfully Assigned.
  *      '400':
- *        description: Email Does Not Exist.
+ *        description: Already has a task.
 */
 }
 
-// app.post('/assignTask', async(req, res) => {
+app.post('/assignTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
 
-// });
+    if(task){
+        res.status(400).send("Already has a task.");
+    }
+    else{
+        let senderEmail = req.body.senderEmail.toLowerCase();
+        let targetEmail = req.body.targetEmail.toLowerCase();
+        let task = req.body.task.toLowerCase();
+
+        const newTask = new Task({
+            senderEmail: senderEmail,
+            targetEmail: targetEmail,
+            task: task
+        });
+        
+        await newTask.save();
+
+        res.status(200).send("Assigned Successfully");
+    }
+});
 
 {
 /**
@@ -556,14 +579,22 @@ app.post('/deleteEntry', async(req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               email:
+ *               targetEmail:
  *                 type: string
  *                 description: Email of user.
  *     responses:
  *      '200':
  *        description: Successfully Retrieved.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                task:
+ *                  type: string
+ *                  description: Assigned Task.
  *      '400':
- *        description: Email Does Not Exist.
+ *        description: User does not have a task.
 */
 }
 
