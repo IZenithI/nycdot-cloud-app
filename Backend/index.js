@@ -675,10 +675,9 @@ app.post('/assignTask', async(req, res) => {
 
 app.post('/getTask', async(req, res) => {
     const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
-    console.log("targetEmail", req.body.targetEmail);
-    console.log("task", task);
+    
     if(task){
-        res.status(400).send(task.task);
+        res.status(200).send(task.task);
     }
     else{
         res.status(400).send("User does not have a task.");
@@ -713,7 +712,7 @@ app.post('/completeTask', async(req, res) => {
 
     if(task){
         await Task.deleteOne({ 'targetEmail': req.body.targetEmail });
-        res.status(400).send("Successfully Deleted");
+        res.status(200).send("Successfully Deleted");
     }
     else{
         res.status(400).send("User does not have a task.");
