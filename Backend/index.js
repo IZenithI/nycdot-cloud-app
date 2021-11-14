@@ -134,6 +134,61 @@ app.post('/signin', async (req, res) => {
 {
 /**
  * @swagger
+ * /getInterns:
+ *   get:
+ *     summary: Returns List of Intern with Tasks
+ *     responses:
+ *      '200':
+ *        description: Successfully Returned Intern Accounts.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                internTasks:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                    properties:
+ *                      internEmail:
+ *                        type: string
+ *                        description: Intern Email
+ *                      task:
+ *                        type: string
+ *                        description: Intern Task
+*/
+}
+
+app.get('/getInterns', async (req, res) => {
+    const interns = await User.find({ 'role': 'intern' }).exec();
+    
+    if(interns.length > 0){
+        let internTasks = [];
+        for(let i = 0; i < interns.length; i++){
+            const internEmail = interns[i].email;
+            const task = await Task.findOne({ 'targetEmail': internEmail }).exec();
+            let internInfo = {
+                'internEmail': internEmail
+            };
+            if(task){
+                internInfo.task = task.task;
+            }
+            else{
+                internInfo.task = "";
+            }
+            internTasks.push(internInfo);
+        }
+        res.status(200).send(internTasks);
+    }
+    else{
+        res.status(400).send("No Existing Interns");
+    }
+
+});
+
+{
+/**
+ * @swagger
  * /createEntry:
  *   post:
  *     summary: Create New Data Entry
