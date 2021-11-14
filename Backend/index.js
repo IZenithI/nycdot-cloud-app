@@ -675,7 +675,8 @@ app.post('/assignTask', async(req, res) => {
 
 app.post('/getTask', async(req, res) => {
     const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
-
+    console.log("targetEmail", req.body.targetEmail);
+    console.log("task", task);
     if(task){
         res.status(400).send(task.task);
     }
