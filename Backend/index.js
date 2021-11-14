@@ -156,6 +156,8 @@ app.post('/signin', async (req, res) => {
  *                      task:
  *                        type: string
  *                        description: Intern Task
+ *      '400':
+ *        description: There are No Existing Interns.
 */
 }
 
@@ -181,7 +183,7 @@ app.get('/getInterns', async (req, res) => {
         res.status(200).send(internTasks);
     }
     else{
-        res.status(400).send("No Existing Interns");
+        res.status(400).send("There Are No Existing Interns");
     }
 
 });
