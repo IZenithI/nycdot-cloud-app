@@ -37,6 +37,20 @@
   }
 }
 
+.suggestion{
+  cursor:pointer;
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+  border-bottom: 1px solid black;
+
+  margin-left:5px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.suggestion:hover{
+  background-color: lightgray;
+}
 /* https://fkhadra.github.io/react-toastify/how-to-style/ */
 .Toastify__toast--warning {
   background: #FFE8BC !important;

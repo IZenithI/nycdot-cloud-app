@@ -5,7 +5,7 @@ import AddTask from './components/AddTask'
 import axios from 'axios'
 import Button from './components/Button'
 import { ToastContainer, toast } from "react-toastify";
-
+import './App.css';
 import {
   BrowserRouter as Router,
   Routes,
@@ -20,24 +20,15 @@ function Application() {
   const {state} = useLocation();
   const {USER_EMAIL, isIntern} = state;
 
-  const {interns, setInterns} =useState([
-    {
-      internEmail: "bruh@gmail.com",
-      task:"520A"
-    },
-    {
-      internEmail: "bruh2@gmail.com",
-      task:"520B"
-    },
-
-  ])
-  const {selectedIntern,setselectedIntern} =useState('')
+  const [interns, setInterns] =useState([])
+  const [selectedIntern,setselectedIntern] =useState('')
+  const [selectedDistrict, setselectedDistrict]=useState('')
+  const [Suggestions, setSuggestions] = useState([])
 
   const[showDataForm, setShowDataForm] = useState(false)
   const[District, setDistrict] = useState('')
 
   const[currentTask, setCurrentTask] = useState([
-    
       {
         FID:null,
         Id:"",
@@ -324,12 +315,23 @@ function Application() {
     "WEST STREET",
     "WOOSTER STREET"
   ];
+
+
   useEffect(() => {
-    if(!isIntern)
-    {
-      getInternsandTasks()
-    }
-  },[]);
+    const fetchData = async () => {
+      if(!isIntern)
+      {
+      const response = await 
+        axios.get('https://nycdot-cloud-app-backend.herokuapp.com/getInterns',
+      );
+      setInterns(response.data);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+
 
   useEffect(() => {
     if(isIntern)
@@ -467,27 +469,28 @@ function Application() {
 
 
   const retrieveData =() => {
-    console.log('this is the district right before calling getSection ',District)
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/getSection',
+    if(District !== '' )
     {
-      Section: District
-    })
-    .then(function (response){
-      //toast.dark('Successfully retrieved district data')
-      console.log(response);
-      setTasks(response.data)
-    })
-    .catch(function(error){
-      toast.warning('Failed to retrieve district data')
-      console.log(error)
-      setTasks([])
-    })
+        axios.post('https://nycdot-cloud-app-backend.herokuapp.com/getSection',
+      {
+        Section: District
+      })
+      .then(function (response){
+        //toast.dark('Successfully retrieved district data')
+        console.log(response);
+        setTasks(response.data)
+      })
+      .catch(function(error){
+        toast.warning('Failed to retrieve district data')
+        console.log(error)
+        setTasks([])
+      })
+    }
   }
 
 
   const getTask = () => 
   {
-    console.log('running getTask')
     axios.post('https://nycdot-cloud-app-backend.herokuapp.com/getTask',
     {
       targetEmail: USER_EMAIL
@@ -496,7 +499,7 @@ function Application() {
       toast.dark('Successfully retrieved tasks')
       console.log(response.data);
       setDistrict(response.data)
-      //retrieveData()
+      retrieveData()
     })
     .catch(function(error){
       toast.warning('You have no tasks')
@@ -504,25 +507,27 @@ function Application() {
     })
   }
 
-  const testassignTask = ()=>
+  const assignTask = ()=>
   {
     axios.post('https://nycdot-cloud-app-backend.herokuapp.com/assignTask',
     {
       senderEmail: USER_EMAIL,
-      targetEmail: "dummy@gmail.com",
-      task: "410A"
+      targetEmail: selectedIntern,
+      task: selectedDistrict
     })
     .then(function (response){
       toast.dark('Successfully assigned task')
       console.log(response);
+      setselectedIntern('')
+      setselectedDistrict('')
     })
     .catch(function(error){
-      toast.warning('Already has a task/Invalid Permission')
+      toast.warning('Already has a task')
       console.log(error)
     }) 
   }
 
-
+ 
 
   const getInternsandTasks =()=>
   {
@@ -531,7 +536,8 @@ function Application() {
     })
     .then(function (response){
       toast.dark('Successfully retrieved interns')
-      console.log(response);
+      setInterns(response.data)
+      console.log(interns)
     })
     .catch(function(error){
       toast.warning('You have no interns..')
@@ -555,15 +561,34 @@ function Application() {
     })
   }
 
+  let InternNames = interns.map(a => a.internEmail)
+  const onChangeHandler = (text) => {    
+    let matches =[]
+    if(text.length>0)
+    {
+      matches = InternNames.filter(user => {
+        const regex = new RegExp( `${text}`, "gi");
+        return user.match(regex)
+      })
+    }
+    console.log('matches', matches)
+    setSuggestions(matches)
+    setselectedIntern(text)
+  }
+
+  const onSuggestionHandler=(text)=>{
+    setselectedIntern(text);
+    setSuggestions([])
+  }
+
   return (
-<div className="container">
+  <div className="container">
       <Header emptyEntry={() => setCurrentTask(emptyEntry)} 
       onAdd={()=> setShowDataForm(!showDataForm)}
       showDataForm={showDataForm}
-      
     />
-    
 
+    <h2>{USER_EMAIL}</h2>
     { showDataForm && 
     <AddTask 
       onAdd={submitData}
@@ -589,19 +614,37 @@ function Application() {
       <Button color='black' text='Retrieve' onClick = {retrieveData}/>
     </div>}
 
-    <div className='form-control form-control-check'>
-      <label> Choose an intern  </label>
-      <select value={selectedIntern} onChange={(e) => setselectedIntern(e.target.value)} >
-        <option defaultValue = ''> none </option>
+    {!isIntern && <div className='form-control'>
+      <label>Assign an Intern a Task </label>
+      <input type ='text' placeholder='Input an Intern' 
+      onChange={(e) => onChangeHandler(e.target.value)}
+      value={selectedIntern} 
+      onBlur={()=>{
+        setTimeout(() => {
+            setSuggestions([])
+        }, 100 )
+      }}
+      />
+      {Suggestions && Suggestions.map((suggestion,i) =>
+      <div key={i}  className="suggestion" 
+        onClick={() => onSuggestionHandler(suggestion)}
+      >{suggestion} </div>
+      )}
 
-      </select>
-    </div>
+      <input type ='text' placeholder='Input a section' 
+      onChange={(e) => setselectedDistrict(e.target.value)}
+      value={selectedDistrict} 
+      />
+      <Button color='black'  text = "Assign" onClick = {assignTask}> </Button>
+    </div>}
+
+    
+    {!isIntern && <Button color='black' text='Get Interns with task' onClick = {getInternsandTasks}/>}
+
+    {(isIntern && District!='') && <Button color='black' text='Reload Tasks' onClick = {getTask}/>}
+    {(isIntern && District!='') && <Button color='black' text='Submit Task' onClick = {submitTask}/>}
 
 
-    <Button color='black' text='test get task' onClick = {getTask}/>
-    <Button color='black' text='test assign task' onClick = {testassignTask}/>
-    <Button color='black' text='Get Interns with task' onClick = {getInternsandTasks}/>
-    <Button color='black' text='Submit Task' onClick = {submitTask}/>
     <ToastContainer />
     </div>
   );
