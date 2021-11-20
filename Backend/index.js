@@ -482,37 +482,53 @@ app.get('/getInterns', async (req, res) => {
 }
 
 app.post('/createEntry', async (req, res) => {
-    const data = await Data.findOne({ 'Id': req.body.Id }).exec();
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'})
+    let values = getResponse.data.values;
 
-    if(data){
+    let foundEntry = false;
+
+    for(let row of values){
+        if(row[1] == req.body.Id){
+            foundEntry = true;
+        }
+    }
+
+    if(foundEntry){
         res.status(400).send("Entry Already Exists");
     }
     else{
-        const newData = new Data({
-            FID: req.body.FID,
-            Id: req.body.Id,
-            Comments: req.body.Comments,
-            ImageID: req.body.ImageID,
-            ImageDat: req.body.ImageDat,
-            Link: req.body.Link,
-            XY: req.body.XY,
-            Section: req.body.Section,
-            OnStreet: req.body.OnStreet,
-            CrossStreet1: req.body.CrossStreet1,
-            CrossStreet2: req.body.CrossStreet2,
-            PostType: req.body.PostType,
-            PedestrianArm: req.body.PedestrianArm,
-            NoArms: req.body.NoArms,
-            PostColor: req.body.PostColor,
-            LuminaireType: req.body.LuminaireType,
-            TeardropType: req.body.TeardropType,
-            AttachmentType1: req.body.AttachmentType1,
-            AttachmentType2: req.body.AttachmentType2,
-            AttachmentType3: req.body.AttachmentType3
+        let values = [
+            [
+                req.body.FID,
+                req.body.Id,
+                req.body.Comments,
+                req.body.ImageID,
+                req.body.ImageDat,
+                req.body.Link,
+                req.body.XY,
+                req.body.Section,
+                req.body.OnStreet,
+                req.body.CrossStreet1,
+                req.body.CrossStreet2,
+                req.body.PostType,
+                req.body.PedestrianArm,
+                req.body.NoArms,
+                req.body.PostColor,
+                req.body.LuminaireType,
+                req.body.TeardropType,
+                req.body.AttachmentType1,
+                req.body.AttachmentType2,
+                req.body.AttachmentType3
+            ]
+        ]
+        const sheetEntry = {values};
+        await sheets.spreadsheets.values.append({
+            auth: jwtClient,
+            spreadsheetId: spreadsheetId,
+            range: 'Data',
+            valueInputOption: "RAW",
+            resource: sheetEntry
         });
-
-        const newSavedData = await newData.save();
-
         res.status(200).send("Created Successfully");
     }
 });
@@ -611,8 +627,39 @@ app.post('/createEntry', async (req, res) => {
 }
 
 app.post('/getSection', async (req, res) => {
-    const sectionEntries = await Data.find({ 'Section': req.body.Section }).exec();
-    
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let values = getResponse.data.values;
+
+    let sectionEntries = [];
+    for(let i = 1; i < values.length; i++){
+        let row = values[i];
+        if(row[7] == req.body.Section){
+            let entry = {
+                FID: row[0],
+                Id: row[1],
+                Comments: row[2],
+                ImageID: row[3],
+                ImageDat: row[4],
+                Link: row[5],
+                XY: row[6],
+                Section: row[7],
+                OnStreet: row[8],
+                CrossStreet1: row[9],
+                CrossStreet2: row[10],
+                PostType: row[11],
+                PedestrianArm: row[12],
+                NoArms: row[13],
+                PostColor: row[14],
+                LuminaireType: row[15],
+                TeardropType: row[16],
+                AttachmentType1: row[17],
+                AttachmentType2: row[18],
+                AttachmentType3: row[19]
+            }
+            sectionEntries.push(entry);
+        }
+    }
+
     if(sectionEntries.length > 0){
         res.status(200).send(sectionEntries);
     }
@@ -703,38 +750,49 @@ app.post('/getSection', async (req, res) => {
 }
 
 app.put('/updateEntry', async (req, res) => {
-    const dataToUpdate = await Data.findOne({ 'Id': req.body.Id }).exec();
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let values = getResponse.data.values;
 
-    if(dataToUpdate){
-        dataToUpdate.FID = req.body.FID;
-        dataToUpdate.Id = req.body.Id;
-        dataToUpdate.Comments = req.body.Comments;
-        dataToUpdate.ImageID = req.body.ImageID;
-        dataToUpdate.ImageDat = req.body.ImageDat;
-        dataToUpdate.Link = req.body.Link;
-        dataToUpdate.XY = req.body.XY;
-        dataToUpdate.Section = req.body.Section;
-        dataToUpdate.OnStreet = req.body.OnStreet;
-        dataToUpdate.CrossStreet1 = req.body.CrossStreet1;
-        dataToUpdate.CrossStreet2 = req.body.CrossStreet2;
-        dataToUpdate.PostType = req.body.PostType;
-        dataToUpdate.PedestrianArm = req.body.PedestrianArm;
-        dataToUpdate.NoArms = req.body.NoArms;
-        dataToUpdate.PostColor = req.body.PostColor;
-        dataToUpdate.LuminaireType = req.body.LuminaireType;
-        dataToUpdate.TeardropType = req.body.TeardropType;
-        dataToUpdate.AttachmentType1 = req.body.AttachmentType1;
-        dataToUpdate.AttachmentType2 = req.body.AttachmentType2;
-        dataToUpdate.AttachmentType3 = req.body.AttachmentType3;
-
-        await dataToUpdate.save();
-
-        res.status(200).send("Successfully Updated")
+    for(let i = 0; i < values.length; i++){
+        if(row[1] == req.body.Id){
+            let values = [
+                [
+                    req.body.FID,
+                    req.body.Id,
+                    req.body.Comments,
+                    req.body.ImageID,
+                    req.body.ImageDat,
+                    req.body.Link,
+                    req.body.XY,
+                    req.body.Section,
+                    req.body.OnStreet,
+                    req.body.CrossStreet1,
+                    req.body.CrossStreet2,
+                    req.body.PostType,
+                    req.body.PedestrianArm,
+                    req.body.NoArms,
+                    req.body.PostColor,
+                    req.body.LuminaireType,
+                    req.body.TeardropType,
+                    req.body.AttachmentType1,
+                    req.body.AttachmentType2,
+                    req.body.AttachmentType3
+                ]
+            ]
+            const sheetEntry = {values};
+            await sheets.spreadsheets.values.update({
+                auth: jwtClient,
+                spreadsheetId: spreadsheetId,
+                range: 'Data!A'+(i+1),
+                valueInputOption: "RAW",
+                resource: sheetEntry
+            });
+            res.status(200).send("SuccessfullyUpdated");
+            return;
+        }
     }
-    else{
-        res.status(400).send("Data Does Not Exist")
-    }
-    
+
+    res.status(400).send("Data Does Not Exist");    
 });
 
 {
@@ -766,24 +824,40 @@ app.put('/updateEntry', async (req, res) => {
 }
 
 app.post('/deleteEntry', async(req, res) => {
-    console.log("role: " + req.body.role);
-    console.log("Id: " + req.body.Id);
     if(req.body.role == "admin"){
-        const data = await Data.find({ 'Id': req.body.Id }).exec();
-        console.log(data);
-        if(data){
-            await Data.deleteOne({ 'Id': req.body.Id });
+        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+        let values = getResponse.data.values;
 
-            res.status(200).send("Successfully Deleted");
+        for(let i = 1; i < values.length; i++){
+            let row = values[i];
+            if(row[1] == req.body.Id){
+                sheets.spreadsheets.batchUpdate({
+                    auth: jwtClient,
+                    spreadsheetId: spreadsheetId,
+                    resource:{
+                        requests: [
+                            {
+                                deleteDimension:{
+                                    range:{
+                                        sheetId: "1764316489",
+                                        dimension: "ROWS",
+                                        startIndex: i,
+                                        endIndex: i+1
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                })
+                res.status(200).send("Successfully Deleted");
+                return;
+            }
         }
-        else{
-            res.status(400).send("Entry Does Not Exist");
-        }
+        res.status(400).send("Entry Does Not Exist");
     }
     else{
         res.status(401).send("Invalid Permission");
     }
-
 });
 
 const port = process.env.PORT || 8000;
