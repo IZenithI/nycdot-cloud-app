@@ -94,23 +94,39 @@ const sheets = google.sheets('v4');
 }
 
 app.post('/signup', async (req, res) => {
-    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let values = getResponse.data.values;
 
-    if(user){
+    let email = req.body.email.toLowerCase();
+    let role = req.body.role.toLowerCase();
+    let foundEmail = false;
+
+    for(let row of values){
+        if(row[0] == email){
+            foundEmail = true;
+            break;
+        }
+    }
+
+    if(foundEmail){
         res.status(400).send("Already Signed Up");
     }
     else{
-        let email = req.body.email.toLowerCase();
-        let role = req.body.role.toLowerCase();
-
-        const newUser = new User({
-            email: email,
-            role: role
+        let values = [
+            [
+                email,
+                role
+            ]
+        ]
+        const sheetEntry = {values};
+        await sheets.spreadsheets.values.append({
+            auth: jwtClient,
+            spreadsheetId: spreadsheetId,
+            range: 'Users',
+            valueInputOption: "RAW",
+            resource: sheetEntry
         });
-        
-        const savedUser = await newUser.save();
-
-        res.status(200).send(savedUser.email + " Successfully Signed Up");
+        res.status(200).send("Successfully Signed Up");
     }
 });
 
@@ -146,14 +162,19 @@ app.post('/signup', async (req, res) => {
 }
 
 app.post('/signin', async (req, res) => {
-    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
 
-    if(user){
-        res.status(200).send(user.role);
+    let values = getResponse.data.values;
+    let email = req.body.email.toLowerCase();
+
+    for(let row of values){
+        if(row[0] == email){
+            res.status(200).send(row[1]); 
+            return;
+        }
     }
-    else{
-        res.status(404).send("User is not found");
-    }
+
+    res.status(400).send("User is not found");
 });
 
 {
