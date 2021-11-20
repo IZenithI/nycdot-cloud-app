@@ -42,31 +42,6 @@ app.get('/', function(req, res){
     res.send('Hello World!');
 });
 
-/////////CONNECT GOOGLE SHEETS DB/////////
-
-const {google} = require('googleapis');
-const secretKey = require("./client_secret.json");
-const jwtClient = new google.auth.JWT(
-    secretKey.client_email,
-    null,
-    secretKey.private_key,
-    ['https://www.googleapis.com/auth/spreadsheets']
-);
-
-jwtClient.authorize(function (err, tokens) {
-    if(err) {
-        console.log(err);
-        return;
-    } else {
-        console.log("Successfully connected!");
-    }
-});
-
-const spreadsheetId = process.env.SPREADSHEET_ID;
-const sheets = google.sheets('v4');
-
-////////////////////////////////////////////////////
-
 {
 /**
  * @swagger
@@ -94,40 +69,23 @@ const sheets = google.sheets('v4');
 }
 
 app.post('/signup', async (req, res) => {
-    let email = req.body.email.toLowerCase();
-    let role = req.body.role.toLowerCase();
+    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
-    let values = getResponse.data.values;
-
-    let foundEmail = false;
-
-    for(let row of values){
-        if(row[0] == email){
-            foundEmail = true;
-            break;
-        }
-    }
-
-    if(foundEmail){
+    if(user){
         res.status(400).send("Already Signed Up");
     }
     else{
-        let values = [
-            [
-                email,
-                role
-            ]
-        ]
-        const sheetEntry = {values};
-        await sheets.spreadsheets.values.append({
-            auth: jwtClient,
-            spreadsheetId: spreadsheetId,
-            range: 'Users',
-            valueInputOption: "RAW",
-            resource: sheetEntry
+        let email = req.body.email.toLowerCase();
+        let role = req.body.role.toLowerCase();
+
+        const newUser = new User({
+            email: email,
+            role: role
         });
-        res.status(200).send("Successfully Signed Up");
+        
+        const savedUser = await newUser.save();
+
+        res.status(200).send(savedUser.email + " Successfully Signed Up");
     }
 });
 
@@ -163,185 +121,14 @@ app.post('/signup', async (req, res) => {
 }
 
 app.post('/signin', async (req, res) => {
-    let email = req.body.email.toLowerCase();
+    const user = await User.findOne({ 'email': req.body.email.toLowerCase() }).exec();
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
-    let values = getResponse.data.values;
-
-    for(let row of values){
-        if(row[0] == email){
-            res.status(200).send(row[1]);
-            return;
-        }
+    if(user){
+        res.status(200).send(user.role);
     }
-
-    res.status(400).send("User is not found");
-});
-
-{
-/**
- * @swagger
- * /assignTask:
- *   post:
- *     summary: Task Assignment
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               senderEmail:
- *                 type: string
- *                 description: Email of sender of task.
- *               targetEmail:
- *                 type: string
- *                 description: Email to assign task to.
- *               task:
- *                 type: string
- *                 description: Task to assign to user.
- *     responses:
- *      '200':
- *        description: Successfully Assigned.
- *      '400':
- *        description: Already has a task.
- *      '401':
- *        description: Invalid Permission.
-*/
-}
-
-app.post('/assignTask', async(req, res) => {
-    let senderEmail = req.body.senderEmail.toLowerCase();
-    let targetEmail = req.body.targetEmail.toLowerCase();
-    let task = req.body.task;
-
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
-    let values = getResponse.data.values;
-    
-    let hasTask = false;
-    for(let i = 0; i < values.length; i++){
-        let row = values[i];
-        if(row[0] == targetEmail){
-            if(row[2] == null){
-                let values = [
-                    [
-                        targetEmail,
-                        senderEmail,
-                        task
-                    ]
-                ]
-                const sheetEntry = {values};
-                await sheets.spreadsheets.values.update({
-                    auth: jwtClient,
-                    spreadsheetId: spreadsheetId,
-                    range: 'Tasks!A'+(i+1),
-                    valueInputOption: "RAW",
-                    resource: sheetEntry
-                });
-        
-                res.status(200).send("Assigned Successfully");
-                return;
-            }
-            break;
-        }
+    else{
+        res.status(404).send("User is not found");
     }
-
-    res.status(400).send("Already has a task.");
-});
-
-{
-/**
- * @swagger
- * /getTask:
- *   post:
- *     summary: Get Task
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetEmail:
- *                 type: string
- *                 description: Email of user.
- *     responses:
- *      '200':
- *        description: Successfully Retrieved.
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                task:
- *                  type: string
- *                  description: Assigned Task.
- *      '400':
- *        description: User does not have a task.
-*/
-}
-
-app.post('/getTask', async(req, res) => {
-    let targetEmail = req.body.targetEmail;
-
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
-    let values = getResponse.data.values;
-    
-    for(let row of values){
-        if(row[0] == targetEmail){
-            res.status(200).send(row[2]);
-            return;
-        }
-    }
-
-    res.status(400).send("User does not have a task.");
-});
-
-{
-/**
- * @swagger
- * /completeTask:
- *   post:
- *     summary: Complete Task
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetEmail:
- *                 type: string
- *                 description: User email for task to delete.
- *     responses:
- *      '200':
- *        description: Successfully Completed.
- *      '400':
- *        description: User does not have a task.
-*/
-}
-
-app.post('/completeTask', async(req, res) => {
-    let targetEmail = req.body.targetEmail;
-
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
-    let values = getResponse.data.values;
-    
-    for(let i = 1; i < values.length; i++){
-        let row = values[i];
-        if(row[0] == targetEmail){
-            if(row[2] != null){
-                await sheets.spreadsheets.values.clear({
-                    auth: jwtClient,
-                    spreadsheetId: spreadsheetId,
-                    range: 'Tasks!C'+(i+1),
-                });
-
-                res.status(200).send("Successfully Completed");
-                return;
-            }
-            break;
-        }
-    }
-
-    res.status(400).send("User does not have a task.");
 });
 
 {
@@ -375,30 +162,30 @@ app.post('/completeTask', async(req, res) => {
 }
 
 app.get('/getInterns', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
-    let values = getResponse.data.values;
-
-    let internTasks = [];
-    for(let i = 1; i < values.length; i++){
-        let row = values[i];
-        let internInfo = {
-            'internEmail': row[0]
+    const interns = await User.find({ 'role': 'intern' }).exec();
+    
+    if(interns.length > 0){
+        let internTasks = [];
+        for(let i = 0; i < interns.length; i++){
+            const internEmail = interns[i].email;
+            const task = await Task.findOne({ 'targetEmail': internEmail }).exec();
+            let internInfo = {
+                'internEmail': internEmail
+            };
+            if(task){
+                internInfo.task = task.task;
+            }
+            else{
+                internInfo.task = "";
+            }
+            internTasks.push(internInfo);
         }
-
-        if(row[2] != null){
-            internInfo.task = row[2];
-        }
-        else{
-            internInfo.task = "";
-        }
-        internTasks.push(internInfo);
-    }
-    if(internTasks.length > 0){
         res.status(200).send(internTasks);
     }
     else{
         res.status(400).send("There Are No Existing Interns");
     }
+
 });
 
 {
@@ -482,53 +269,37 @@ app.get('/getInterns', async (req, res) => {
 }
 
 app.post('/createEntry', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'})
-    let values = getResponse.data.values;
+    const data = await Data.findOne({ 'Id': req.body.Id }).exec();
 
-    let foundEntry = false;
-
-    for(let row of values){
-        if(row[1] == req.body.Id){
-            foundEntry = true;
-        }
-    }
-
-    if(foundEntry){
+    if(data){
         res.status(400).send("Entry Already Exists");
     }
     else{
-        let values = [
-            [
-                req.body.FID,
-                req.body.Id,
-                req.body.Comments,
-                req.body.ImageID,
-                req.body.ImageDat,
-                req.body.Link,
-                req.body.XY,
-                req.body.Section,
-                req.body.OnStreet,
-                req.body.CrossStreet1,
-                req.body.CrossStreet2,
-                req.body.PostType,
-                req.body.PedestrianArm,
-                req.body.NoArms,
-                req.body.PostColor,
-                req.body.LuminaireType,
-                req.body.TeardropType,
-                req.body.AttachmentType1,
-                req.body.AttachmentType2,
-                req.body.AttachmentType3
-            ]
-        ]
-        const sheetEntry = {values};
-        await sheets.spreadsheets.values.append({
-            auth: jwtClient,
-            spreadsheetId: spreadsheetId,
-            range: 'Data',
-            valueInputOption: "RAW",
-            resource: sheetEntry
+        const newData = new Data({
+            FID: req.body.FID,
+            Id: req.body.Id,
+            Comments: req.body.Comments,
+            ImageID: req.body.ImageID,
+            ImageDat: req.body.ImageDat,
+            Link: req.body.Link,
+            XY: req.body.XY,
+            Section: req.body.Section,
+            OnStreet: req.body.OnStreet,
+            CrossStreet1: req.body.CrossStreet1,
+            CrossStreet2: req.body.CrossStreet2,
+            PostType: req.body.PostType,
+            PedestrianArm: req.body.PedestrianArm,
+            NoArms: req.body.NoArms,
+            PostColor: req.body.PostColor,
+            LuminaireType: req.body.LuminaireType,
+            TeardropType: req.body.TeardropType,
+            AttachmentType1: req.body.AttachmentType1,
+            AttachmentType2: req.body.AttachmentType2,
+            AttachmentType3: req.body.AttachmentType3
         });
+
+        const newSavedData = await newData.save();
+
         res.status(200).send("Created Successfully");
     }
 });
@@ -627,39 +398,8 @@ app.post('/createEntry', async (req, res) => {
 }
 
 app.post('/getSection', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
-    let values = getResponse.data.values;
-
-    let sectionEntries = [];
-    for(let i = 1; i < values.length; i++){
-        let row = values[i];
-        if(row[7] == req.body.Section){
-            let entry = {
-                FID: row[0],
-                Id: row[1],
-                Comments: row[2],
-                ImageID: row[3],
-                ImageDat: row[4],
-                Link: row[5],
-                XY: row[6],
-                Section: row[7],
-                OnStreet: row[8],
-                CrossStreet1: row[9],
-                CrossStreet2: row[10],
-                PostType: row[11],
-                PedestrianArm: row[12],
-                NoArms: row[13],
-                PostColor: row[14],
-                LuminaireType: row[15],
-                TeardropType: row[16],
-                AttachmentType1: row[17],
-                AttachmentType2: row[18],
-                AttachmentType3: row[19]
-            }
-            sectionEntries.push(entry);
-        }
-    }
-
+    const sectionEntries = await Data.find({ 'Section': req.body.Section }).exec();
+    
     if(sectionEntries.length > 0){
         res.status(200).send(sectionEntries);
     }
@@ -750,49 +490,38 @@ app.post('/getSection', async (req, res) => {
 }
 
 app.put('/updateEntry', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
-    let values = getResponse.data.values;
+    const dataToUpdate = await Data.findOne({ 'Id': req.body.Id }).exec();
 
-    for(let i = 0; i < values.length; i++){
-        if(row[1] == req.body.Id){
-            let values = [
-                [
-                    req.body.FID,
-                    req.body.Id,
-                    req.body.Comments,
-                    req.body.ImageID,
-                    req.body.ImageDat,
-                    req.body.Link,
-                    req.body.XY,
-                    req.body.Section,
-                    req.body.OnStreet,
-                    req.body.CrossStreet1,
-                    req.body.CrossStreet2,
-                    req.body.PostType,
-                    req.body.PedestrianArm,
-                    req.body.NoArms,
-                    req.body.PostColor,
-                    req.body.LuminaireType,
-                    req.body.TeardropType,
-                    req.body.AttachmentType1,
-                    req.body.AttachmentType2,
-                    req.body.AttachmentType3
-                ]
-            ]
-            const sheetEntry = {values};
-            await sheets.spreadsheets.values.update({
-                auth: jwtClient,
-                spreadsheetId: spreadsheetId,
-                range: 'Data!A'+(i+1),
-                valueInputOption: "RAW",
-                resource: sheetEntry
-            });
-            res.status(200).send("SuccessfullyUpdated");
-            return;
-        }
+    if(dataToUpdate){
+        dataToUpdate.FID = req.body.FID;
+        dataToUpdate.Id = req.body.Id;
+        dataToUpdate.Comments = req.body.Comments;
+        dataToUpdate.ImageID = req.body.ImageID;
+        dataToUpdate.ImageDat = req.body.ImageDat;
+        dataToUpdate.Link = req.body.Link;
+        dataToUpdate.XY = req.body.XY;
+        dataToUpdate.Section = req.body.Section;
+        dataToUpdate.OnStreet = req.body.OnStreet;
+        dataToUpdate.CrossStreet1 = req.body.CrossStreet1;
+        dataToUpdate.CrossStreet2 = req.body.CrossStreet2;
+        dataToUpdate.PostType = req.body.PostType;
+        dataToUpdate.PedestrianArm = req.body.PedestrianArm;
+        dataToUpdate.NoArms = req.body.NoArms;
+        dataToUpdate.PostColor = req.body.PostColor;
+        dataToUpdate.LuminaireType = req.body.LuminaireType;
+        dataToUpdate.TeardropType = req.body.TeardropType;
+        dataToUpdate.AttachmentType1 = req.body.AttachmentType1;
+        dataToUpdate.AttachmentType2 = req.body.AttachmentType2;
+        dataToUpdate.AttachmentType3 = req.body.AttachmentType3;
+
+        await dataToUpdate.save();
+
+        res.status(200).send("Successfully Updated")
     }
-
-    res.status(400).send("Data Does Not Exist");    
+    else{
+        res.status(400).send("Data Does Not Exist")
+    }
+    
 });
 
 {
@@ -824,39 +553,169 @@ app.put('/updateEntry', async (req, res) => {
 }
 
 app.post('/deleteEntry', async(req, res) => {
+    console.log("role: " + req.body.role);
+    console.log("Id: " + req.body.Id);
     if(req.body.role == "admin"){
-        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
-        let values = getResponse.data.values;
+        const data = await Data.find({ 'Id': req.body.Id }).exec();
+        console.log(data);
+        if(data){
+            await Data.deleteOne({ 'Id': req.body.Id });
 
-        for(let i = 1; i < values.length; i++){
-            let row = values[i];
-            if(row[1] == req.body.Id){
-                sheets.spreadsheets.batchUpdate({
-                    auth: jwtClient,
-                    spreadsheetId: spreadsheetId,
-                    resource:{
-                        requests: [
-                            {
-                                deleteDimension:{
-                                    range:{
-                                        sheetId: "1764316489",
-                                        dimension: "ROWS",
-                                        startIndex: i,
-                                        endIndex: i+1
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                })
-                res.status(200).send("Successfully Deleted");
-                return;
-            }
+            res.status(200).send("Successfully Deleted");
         }
-        res.status(400).send("Entry Does Not Exist");
+        else{
+            res.status(400).send("Entry Does Not Exist");
+        }
     }
     else{
         res.status(401).send("Invalid Permission");
+    }
+});
+
+{
+/**
+ * @swagger
+ * /assignTask:
+ *   post:
+ *     summary: Task Assignment
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               senderEmail:
+ *                 type: string
+ *                 description: Email of sender of task.
+ *               targetEmail:
+ *                 type: string
+ *                 description: Email to assign task to.
+ *               task:
+ *                 type: string
+ *                 description: Task to assign to user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Assigned.
+ *      '400':
+ *        description: Already has a task.
+ *      '401':
+ *        description: Invalid Permission.
+*/
+}
+
+app.post('/assignTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
+
+    if(task){
+        res.status(400).send("Already has a task.");
+    }
+    else{
+        let senderEmail = req.body.senderEmail.toLowerCase();
+        let targetEmail = req.body.targetEmail.toLowerCase();
+        let task = req.body.task;
+
+        // const sender = await User.findOne({ 'email': senderEmail }).exec();
+
+        // if(sender.role == 'admin'){
+        //     const newTask = new Task({
+        //         senderEmail: senderEmail,
+        //         targetEmail: targetEmail,
+        //         task: task
+        //     });
+            
+        //     await newTask.save();
+
+        //     res.status(200).send("Assigned Successfully");
+        // }
+        // else{
+        //     res.status(401).send("Invalid Permission");
+        // }
+        const newTask = new Task({
+            senderEmail: senderEmail,
+            targetEmail: targetEmail,
+            task: task
+        });
+        
+        await newTask.save();
+
+        res.status(200).send("Assigned Successfully");
+    }
+});
+
+{
+/**
+ * @swagger
+ * /getTask:
+ *   post:
+ *     summary: Get Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetEmail:
+ *                 type: string
+ *                 description: Email of user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Retrieved.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                task:
+ *                  type: string
+ *                  description: Assigned Task.
+ *      '400':
+ *        description: User does not have a task.
+*/
+}
+
+app.post('/getTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
+    
+    if(task){
+        res.status(200).send(task.task);
+    }
+    else{
+        res.status(400).send("User does not have a task.");
+    }
+});
+
+{
+/**
+ * @swagger
+ * /completeTask:
+ *   post:
+ *     summary: Complete Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetEmail:
+ *                 type: string
+ *                 description: User email for task to delete.
+ *     responses:
+ *      '200':
+ *        description: Successfully Deleted.
+ *      '400':
+ *        description: User does not have a task.
+*/
+}
+
+app.post('/completeTask', async(req, res) => {
+    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
+
+    if(task){
+        await Task.deleteOne({ 'targetEmail': req.body.targetEmail });
+        res.status(200).send("Successfully Deleted");
+    }
+    else{
+        res.status(400).send("User does not have a task.");
     }
 });
 
