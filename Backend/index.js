@@ -7,11 +7,6 @@ const User = require('./Models/User');
 const Data = require('./Models/Data');
 const Task = require('./Models/Task');
 
-/////////////CONNECT TO DB////////////////
-mongoose.connect(process.env.DB_CONNECTION, ()=>{
-    console.log('Conencted to DB');
-})
-
 ///////////////SWAGGER////////////////////
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
