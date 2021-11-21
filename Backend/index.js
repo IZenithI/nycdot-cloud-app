@@ -176,6 +176,172 @@ app.post('/signin', async (req, res) => {
 {
 /**
  * @swagger
+ * /assignTask:
+ *   post:
+ *     summary: Task Assignment
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               senderEmail:
+ *                 type: string
+ *                 description: Email of sender of task.
+ *               targetEmail:
+ *                 type: string
+ *                 description: Email to assign task to.
+ *               task:
+ *                 type: string
+ *                 description: Task to assign to user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Assigned.
+ *      '400':
+ *        description: Already has a task.
+ *      '401':
+ *        description: Invalid Permission.
+*/
+}
+
+app.post('/assignTask', async(req, res) => {
+    let senderEmail = req.body.senderEmail.toLowerCase();
+    let targetEmail = req.body.targetEmail.toLowerCase();
+    let task = req.body.task;
+
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let values = getResponse.data.values;
+    
+    let hasTask = false;
+    for(let i = 0; i < values.length; i++){
+        let row = values[i];
+        if(row[0] == targetEmail){
+            if(row[2] == null){
+                let values = [
+                    [
+                        targetEmail,
+                        senderEmail,
+                        task
+                    ]
+                ]
+                const sheetEntry = {values};
+                await sheets.spreadsheets.values.update({
+                    auth: jwtClient,
+                    spreadsheetId: spreadsheetId,
+                    range: 'Tasks!A'+(i+1),
+                    valueInputOption: "RAW",
+                    resource: sheetEntry
+                });
+        
+                res.status(200).send("Assigned Successfully");
+                return;
+            }
+            break;
+        }
+    }
+
+    res.status(400).send("Already has a task.");
+});
+
+{
+/**
+ * @swagger
+ * /getTask:
+ *   post:
+ *     summary: Get Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetEmail:
+ *                 type: string
+ *                 description: Email of user.
+ *     responses:
+ *      '200':
+ *        description: Successfully Retrieved.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                task:
+ *                  type: string
+ *                  description: Assigned Task.
+ *      '400':
+ *        description: User does not have a task.
+*/
+}
+
+app.post('/getTask', async(req, res) => {
+    let targetEmail = req.body.targetEmail;
+
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let values = getResponse.data.values;
+    
+    for(let row of values){
+        if(row[0] == targetEmail){
+            res.status(200).send(row[2]);
+            return;
+        }
+    }
+
+    res.status(400).send("User does not have a task.");
+});
+
+{
+/**
+ * @swagger
+ * /completeTask:
+ *   post:
+ *     summary: Complete Task
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetEmail:
+ *                 type: string
+ *                 description: User email for task to delete.
+ *     responses:
+ *      '200':
+ *        description: Successfully Completed.
+ *      '400':
+ *        description: User does not have a task.
+*/
+}
+
+app.post('/completeTask', async(req, res) => {
+    let targetEmail = req.body.targetEmail;
+
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let values = getResponse.data.values;
+    
+    for(let i = 1; i < values.length; i++){
+        let row = values[i];
+        if(row[0] == targetEmail){
+            if(row[2] != null){
+                await sheets.spreadsheets.values.clear({
+                    auth: jwtClient,
+                    spreadsheetId: spreadsheetId,
+                    range: 'Tasks!C'+(i+1),
+                });
+
+                res.status(200).send("Successfully Completed");
+                return;
+            }
+            break;
+        }
+    }
+
+    res.status(400).send("User does not have a task.");
+});
+
+{
+/**
+ * @swagger
  * /getInterns:
  *   get:
  *     summary: Returns List of Intern with Tasks
@@ -204,30 +370,30 @@ app.post('/signin', async (req, res) => {
 }
 
 app.get('/getInterns', async (req, res) => {
-    const interns = await User.find({ 'role': 'intern' }).exec();
-    
-    if(interns.length > 0){
-        let internTasks = [];
-        for(let i = 0; i < interns.length; i++){
-            const internEmail = interns[i].email;
-            const task = await Task.findOne({ 'targetEmail': internEmail }).exec();
-            let internInfo = {
-                'internEmail': internEmail
-            };
-            if(task){
-                internInfo.task = task.task;
-            }
-            else{
-                internInfo.task = "";
-            }
-            internTasks.push(internInfo);
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let values = getResponse.data.values;
+
+    let internTasks = [];
+    for(let i = 1; i < values.length; i++){
+        let row = values[i];
+        let internInfo = {
+            'internEmail': row[0]
         }
+
+        if(row[2] != null){
+            internInfo.task = row[2];
+        }
+        else{
+            internInfo.task = "";
+        }
+        internTasks.push(internInfo);
+    }
+    if(internTasks.length > 0){
         res.status(200).send(internTasks);
     }
     else{
         res.status(400).send("There Are No Existing Interns");
     }
-
 });
 
 {
@@ -611,153 +777,6 @@ app.post('/deleteEntry', async(req, res) => {
     }
     else{
         res.status(401).send("Invalid Permission");
-    }
-});
-
-{
-/**
- * @swagger
- * /assignTask:
- *   post:
- *     summary: Task Assignment
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               senderEmail:
- *                 type: string
- *                 description: Email of sender of task.
- *               targetEmail:
- *                 type: string
- *                 description: Email to assign task to.
- *               task:
- *                 type: string
- *                 description: Task to assign to user.
- *     responses:
- *      '200':
- *        description: Successfully Assigned.
- *      '400':
- *        description: Already has a task.
- *      '401':
- *        description: Invalid Permission.
-*/
-}
-
-app.post('/assignTask', async(req, res) => {
-    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
-
-    if(task){
-        res.status(400).send("Already has a task.");
-    }
-    else{
-        let senderEmail = req.body.senderEmail.toLowerCase();
-        let targetEmail = req.body.targetEmail.toLowerCase();
-        let task = req.body.task;
-
-        // const sender = await User.findOne({ 'email': senderEmail }).exec();
-
-        // if(sender.role == 'admin'){
-        //     const newTask = new Task({
-        //         senderEmail: senderEmail,
-        //         targetEmail: targetEmail,
-        //         task: task
-        //     });
-            
-        //     await newTask.save();
-
-        //     res.status(200).send("Assigned Successfully");
-        // }
-        // else{
-        //     res.status(401).send("Invalid Permission");
-        // }
-        const newTask = new Task({
-            senderEmail: senderEmail,
-            targetEmail: targetEmail,
-            task: task
-        });
-        
-        await newTask.save();
-
-        res.status(200).send("Assigned Successfully");
-    }
-});
-
-{
-/**
- * @swagger
- * /getTask:
- *   post:
- *     summary: Get Task
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetEmail:
- *                 type: string
- *                 description: Email of user.
- *     responses:
- *      '200':
- *        description: Successfully Retrieved.
- *        content:
- *          application/json:
- *            schema:
- *              type: object
- *              properties:
- *                task:
- *                  type: string
- *                  description: Assigned Task.
- *      '400':
- *        description: User does not have a task.
-*/
-}
-
-app.post('/getTask', async(req, res) => {
-    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
-    
-    if(task){
-        res.status(200).send(task.task);
-    }
-    else{
-        res.status(400).send("User does not have a task.");
-    }
-});
-
-{
-/**
- * @swagger
- * /completeTask:
- *   post:
- *     summary: Complete Task
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               targetEmail:
- *                 type: string
- *                 description: User email for task to delete.
- *     responses:
- *      '200':
- *        description: Successfully Deleted.
- *      '400':
- *        description: User does not have a task.
-*/
-}
-
-app.post('/completeTask', async(req, res) => {
-    const task = await Task.findOne({ 'targetEmail': req.body.targetEmail.toLowerCase() }).exec();
-
-    if(task){
-        await Task.deleteOne({ 'targetEmail': req.body.targetEmail });
-        res.status(200).send("Successfully Deleted");
-    }
-    else{
-        res.status(400).send("User does not have a task.");
     }
 });
 
