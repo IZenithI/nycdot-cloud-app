@@ -122,6 +122,21 @@ app.post('/signup', async (req, res) => {
             valueInputOption: "RAW",
             resource: sheetEntry
         });
+
+        values = [
+            [
+                email
+            ]
+        ]
+
+        await sheets.spreadsheets.values.append({
+            auth: jwtClient,
+            spreadsheetId: spreadsheetId,
+            range: 'Tasks',
+            valueInputOption: "RAW",
+            resource: {values}
+        });
+
         res.status(200).send("Successfully Signed Up");
     }
 });
