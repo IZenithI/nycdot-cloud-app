@@ -45,10 +45,11 @@ app.get('/', function(req, res){
 /////////CONNECT GOOGLE SHEETS DB/////////
 
 const {google} = require('googleapis');
+const secretKey = JSON.parse(process.env.SECRET_KEY);
 const jwtClient = new google.auth.JWT(
-    process.env.SECRET_CLIENT_EMAIL,
+    secretKey.client_email,
     null,
-    process.env.SECRET_PRIVATE_KEY,
+    secretKey.private_key,
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
