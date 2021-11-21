@@ -764,6 +764,7 @@ app.get('/getInterns', async (req, res) => {
         let values = getResponse.data.values;
     
         for(let i = 0; i < values.length; i++){
+            let row = values[i];
             if(row[1] == req.body.Id){
                 let values = [
                     [
@@ -797,7 +798,7 @@ app.get('/getInterns', async (req, res) => {
                     valueInputOption: "RAW",
                     resource: sheetEntry
                 });
-                res.status(200).send("SuccessfullyUpdated");
+                res.status(200).send("Successfully Updated");
                 return;
             }
         }
