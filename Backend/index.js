@@ -42,6 +42,31 @@ app.get('/', function(req, res){
     res.send('Hello World!');
 });
 
+/////////CONNECT GOOGLE SHEETS DB/////////
+
+const {google} = require('googleapis');
+const secretKey = JSON.parse(process.env.SECRET_KEY);
+const jwtClient = new google.auth.JWT(
+    secretKey.client_email,
+    null,
+    secretKey.private_key,
+    ['https://www.googleapis.com/auth/spreadsheets']
+);
+
+jwtClient.authorize(function (err, tokens) {
+    if(err) {
+        console.log(err);
+        return;
+    } else {
+        console.log("Successfully connected!");
+    }
+});
+
+const spreadsheetId = process.env.SPREADSHEET_ID;
+const sheets = google.sheets('v4');
+
+////////////////////////////////////////////////////
+
 {
 /**
  * @swagger
