@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
 const User = require('./Models/User');
 const Data = require('./Models/Data');
@@ -60,7 +61,19 @@ jwtClient.authorize(function (err, tokens) {
 const spreadsheetId = process.env.SPREADSHEET_ID;
 const sheets = google.sheets('v4');
 
-////////////////////////////////////////////////////
+///////////////////Email Setup////////////////////////
+let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    },
+    tls:{
+        rejectUnauthorized: false
+    }
+})
+
+///////////////////////////////////////////////////
 
 {
 /**
@@ -219,6 +232,15 @@ app.post('/signin', async (req, res) => {
 */
 }
 
+async function sendAssignEmail(targetEmail, senderEmail, task){
+    await transporter.sendMail({
+        from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
+        to: targetEmail,
+        subject: "You have been assigned a new section",
+        text: senderEmail + " has assigned you section " + task
+    })
+}
+
 app.post('/assignTask', async(req, res) => {
     let senderEmail = req.body.senderEmail.toLowerCase();
     let targetEmail = req.body.targetEmail.toLowerCase();
@@ -246,7 +268,9 @@ app.post('/assignTask', async(req, res) => {
                     valueInputOption: "RAW",
                     resource: sheetEntry
                 });
-        
+
+                sendAssignEmail(targetEmail, senderEmail, task);
+
                 res.status(200).send("Assigned Successfully");
                 return;
             }
