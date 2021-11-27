@@ -227,7 +227,6 @@ app.post('/assignTask', async(req, res) => {
     let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
     let values = getResponse.data.values;
     
-    let hasTask = false;
     for(let i = 0; i < values.length; i++){
         let row = values[i];
         if(row[0] == targetEmail){
@@ -412,101 +411,360 @@ app.get('/getInterns', async (req, res) => {
 });
 
 {
-    /**
-     * @swagger
-     * /createEntry:
-     *   post:
-     *     summary: Create New Data Entry
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               FID:
-     *                 type: integer
-     *                 description: Entry Unique Identifier
-     *               Id:
-     *                 type: string
-     *                 description: Unique Identifier
-     *               Comments:
-     *                 type: string
-     *                 description: Comments
-     *               ImageID:
-     *                 type: string
-     *                 description: Image ID
-     *               ImageDat:
-     *                 type: string
-     *                 description: Image Date
-     *               Link:
-     *                 type: string
-     *                 description: Link
-     *               XY:
-     *                 type: string
-     *                 description: Coordinates
-     *               Section:
-     *                 type: string
-     *                 description: Section
-     *               OnStreet:
-     *                 type: string
-     *                 description: Street
-     *               CrossStreet1:
-     *                 type: string
-     *                 description: Cross Street
-     *               CrossStreet2:
-     *                 type: string
-     *                 description: Cross Street
-     *               PostType:
-     *                 type: string
-     *                 description: Light Post Type
-     *               PedestrianArm:
-     *                 type: string
-     *                 description: Contains Pedestrian Arm
-     *               NoArms:
-     *                 type: integer
-     *                 description: Number of Arms
-     *               PostColor:
-     *                 type: string
-     *                 description: Color of Lamp Post
-     *               LuminaireType:
-     *                 type: string
-     *                 description: Type of Luminaire
-     *               TeardropType:
-     *                 type: string
-     *                 description: Teardrop Type
-     *               AttachmentType1:
-     *                 type: string
-     *                 description: Attachment
-     *               AttachmentType2:
-     *                 type: string
-     *                 description: Attachment
-     *               AttachmentType3:
-     *                 type: string
-     *                 description: Attachment
-     *     responses:
-     *      '200':
-     *        description: Successfully Created.
-     *      '400':
-     *        description: Id Already Exists.
-    */
+/**
+ * @swagger
+ * /createEntry:
+ *   post:
+ *     summary: Create New Data Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FID:
+ *                 type: integer
+ *                 description: Entry Unique Identifier
+ *               Id:
+ *                 type: string
+ *                 description: Unique Identifier
+ *               Comments:
+ *                 type: string
+ *                 description: Comments
+ *               ImageID:
+ *                 type: string
+ *                 description: Image ID
+ *               ImageDat:
+ *                 type: string
+ *                 description: Image Date
+ *               Link:
+ *                 type: string
+ *                 description: Link
+ *               XY:
+ *                 type: string
+ *                 description: Coordinates
+ *               Section:
+ *                 type: string
+ *                 description: Section
+ *               OnStreet:
+ *                 type: string
+ *                 description: Street
+ *               CrossStreet1:
+ *                 type: string
+ *                 description: Cross Street
+ *               CrossStreet2:
+ *                 type: string
+ *                 description: Cross Street
+ *               PostType:
+ *                 type: string
+ *                 description: Light Post Type
+ *               PedestrianArm:
+ *                 type: string
+ *                 description: Contains Pedestrian Arm
+ *               NoArms:
+ *                 type: integer
+ *                 description: Number of Arms
+ *               PostColor:
+ *                 type: string
+ *                 description: Color of Lamp Post
+ *               LuminaireType:
+ *                 type: string
+ *                 description: Type of Luminaire
+ *               TeardropType:
+ *                 type: string
+ *                 description: Teardrop Type
+ *               AttachmentType1:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType2:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType3:
+ *                 type: string
+ *                 description: Attachment
+ *     responses:
+ *      '200':
+ *        description: Successfully Created.
+ *      '400':
+ *        description: Id Already Exists.
+*/
+}
+
+app.post('/createEntry', async (req, res) => {
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'})
+    let values = getResponse.data.values;
+
+    let foundEntry = false;
+
+    for(let row of values){
+        if(row[1] == req.body.Id){
+            foundEntry = true;
+        }
     }
-    
-    app.post('/createEntry', async (req, res) => {
-        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'})
-        let values = getResponse.data.values;
-    
-        let foundEntry = false;
-    
-        for(let row of values){
-            if(row[1] == req.body.Id){
-                foundEntry = true;
+
+    if(foundEntry){
+        res.status(400).send("Entry Already Exists");
+    }
+    else{
+        let values = [
+            [
+                req.body.FID,
+                req.body.Id,
+                req.body.Comments,
+                req.body.ImageID,
+                req.body.ImageDat,
+                req.body.Link,
+                req.body.XY,
+                req.body.Section,
+                req.body.OnStreet,
+                req.body.CrossStreet1,
+                req.body.CrossStreet2,
+                req.body.PostType,
+                req.body.PedestrianArm,
+                req.body.NoArms,
+                req.body.PostColor,
+                req.body.LuminaireType,
+                req.body.TeardropType,
+                req.body.AttachmentType1,
+                req.body.AttachmentType2,
+                req.body.AttachmentType3
+            ]
+        ]
+        const sheetEntry = {values};
+        await sheets.spreadsheets.values.append({
+            auth: jwtClient,
+            spreadsheetId: spreadsheetId,
+            range: 'Data',
+            valueInputOption: "RAW",
+            resource: sheetEntry
+        });
+        res.status(200).send("Created Successfully");
+    }
+});
+
+{
+/**
+ * @swagger
+ * /getSection:
+ *   post:
+ *     summary: Returns All Data of a Single Section
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               Section:
+ *                 type: string
+ *                 description: Section letter
+ *     responses:
+ *      '200':
+ *        description: Successfully Returned Section Data.
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                sectionEntries:
+ *                  type: array
+ *                  items:
+ *                    type: object
+ *                    properties:
+ *                      FID:
+ *                        type: integer
+ *                        description: Entry Unique Identifier
+ *                      Id:
+ *                        type: string
+ *                        description: Unique Identifier
+ *                      Comments:
+ *                        type: string
+ *                        description: Comments
+ *                      ImageID:
+ *                        type: string
+ *                        description: Image ID
+ *                      ImageDat:
+ *                        type: string
+ *                        description: Image Date
+ *                      Link:
+ *                        type: string
+ *                        description: Link
+ *                      XY:
+ *                        type: string
+ *                        description: Coordinates
+ *                      Section:
+ *                        type: string
+ *                        description: Section
+ *                      OnStreet:
+ *                        type: string
+ *                        description: Street
+ *                      CrossStreet1:
+ *                        type: string
+ *                        description: Cross Street
+ *                      CrossStreet2:
+ *                        type: string
+ *                        description: Cross Street
+ *                      PostType:
+ *                        type: string
+ *                        description: Light Post Type
+ *                      PedestrianArm:
+ *                        type: string
+ *                        description: Contains Pedestrian Arm
+ *                      NoArms:
+ *                        type: integer
+ *                        description: Number of Arms
+ *                      PostColor:
+ *                        type: string
+ *                        description: Color of Lamp Post
+ *                      LuminaireType:
+ *                        type: string
+ *                        description: Type of Luminaire
+ *                      TeardropType:
+ *                        type: string
+ *                        description: Teardrop Type
+ *                      AttachmentType1:
+ *                        type: string
+ *                        description: Attachment
+ *                      AttachmentType2:
+ *                        type: string
+ *                        description: Attachment
+ *                      AttachmentType3:
+ *                        type: string
+ *                        description: Attachment
+ *      '400':
+ *        description: Section Not Found.
+*/
+}
+
+app.post('/getSection', async (req, res) => {
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let values = getResponse.data.values;
+
+    let sectionEntries = [];
+    for(let i = 1; i < values.length; i++){
+        let row = values[i];
+        if(row[7] == req.body.Section){
+            let entry = {
+                FID: row[0],
+                Id: row[1],
+                Comments: row[2],
+                ImageID: row[3],
+                ImageDat: row[4],
+                Link: row[5],
+                XY: row[6],
+                Section: row[7],
+                OnStreet: row[8],
+                CrossStreet1: row[9],
+                CrossStreet2: row[10],
+                PostType: row[11],
+                PedestrianArm: row[12],
+                NoArms: row[13],
+                PostColor: row[14],
+                LuminaireType: row[15],
+                TeardropType: row[16],
+                AttachmentType1: row[17],
+                AttachmentType2: row[18],
+                AttachmentType3: row[19]
             }
+            sectionEntries.push(entry);
         }
-    
-        if(foundEntry){
-            res.status(400).send("Entry Already Exists");
-        }
-        else{
+    }
+
+    if(sectionEntries.length > 0){
+        res.status(200).send(sectionEntries);
+    }
+    else{
+        res.status(400).send("Section Not Found");
+    }
+
+});
+
+{
+/**
+ * @swagger
+ * /updateEntry:
+ *   put:
+ *     summary: Update Data Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               FID:
+ *                 type: integer
+ *                 description: Entry Unique Identifier
+ *               Id:
+ *                 type: string
+ *                 description: Unique Identifier
+ *               Comments:
+ *                 type: string
+ *                 description: Comments
+ *               ImageID:
+ *                 type: string
+ *                 description: Image ID
+ *               ImageDat:
+ *                 type: string
+ *                 description: Image Date
+ *               Link:
+ *                 type: string
+ *                 description: Link
+ *               XY:
+ *                 type: string
+ *                 description: Coordinates
+ *               Section:
+ *                 type: string
+ *                 description: Section
+ *               OnStreet:
+ *                 type: string
+ *                 description: Street
+ *               CrossStreet1:
+ *                 type: string
+ *                 description: Cross Street
+ *               CrossStreet2:
+ *                 type: string
+ *                 description: Cross Street
+ *               PostType:
+ *                 type: string
+ *                 description: Light Post Type
+ *               PedestrianArm:
+ *                 type: string
+ *                 description: Contains Pedestrian Arm
+ *               NoArms:
+ *                 type: integer
+ *                 description: Number of Arms
+ *               PostColor:
+ *                 type: string
+ *                 description: Color of Lamp Post
+ *               LuminaireType:
+ *                 type: string
+ *                 description: Type of Luminaire
+ *               TeardropType:
+ *                 type: string
+ *                 description: Teardrop Type
+ *               AttachmentType1:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType2:
+ *                 type: string
+ *                 description: Attachment
+ *               AttachmentType3:
+ *                 type: string
+ *                 description: Attachment
+ *     responses:
+ *      '200':
+ *        description: Successfully Updated.
+ *      '400':
+ *        description: Data Does Not Exist.
+*/
+}
+
+app.put('/updateEntry', async (req, res) => {
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let values = getResponse.data.values;
+
+    for(let i = 0; i < values.length; i++){
+        let row = values[i];
+        if(row[1] == req.body.Id){
             let values = [
                 [
                     req.body.FID,
@@ -532,344 +790,85 @@ app.get('/getInterns', async (req, res) => {
                 ]
             ]
             const sheetEntry = {values};
-            await sheets.spreadsheets.values.append({
+            await sheets.spreadsheets.values.update({
                 auth: jwtClient,
                 spreadsheetId: spreadsheetId,
-                range: 'Data',
+                range: 'Data!A'+(i+1),
                 valueInputOption: "RAW",
                 resource: sheetEntry
             });
-            res.status(200).send("Created Successfully");
+            res.status(200).send("Successfully Updated");
+            return;
         }
-    });
-    
-    {
-    /**
-     * @swagger
-     * /getSection:
-     *   post:
-     *     summary: Returns All Data of a Single Section
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               Section:
-     *                 type: string
-     *                 description: Section letter
-     *     responses:
-     *      '200':
-     *        description: Successfully Returned Section Data.
-     *        content:
-     *          application/json:
-     *            schema:
-     *              type: object
-     *              properties:
-     *                sectionEntries:
-     *                  type: array
-     *                  items:
-     *                    type: object
-     *                    properties:
-     *                      FID:
-     *                        type: integer
-     *                        description: Entry Unique Identifier
-     *                      Id:
-     *                        type: string
-     *                        description: Unique Identifier
-     *                      Comments:
-     *                        type: string
-     *                        description: Comments
-     *                      ImageID:
-     *                        type: string
-     *                        description: Image ID
-     *                      ImageDat:
-     *                        type: string
-     *                        description: Image Date
-     *                      Link:
-     *                        type: string
-     *                        description: Link
-     *                      XY:
-     *                        type: string
-     *                        description: Coordinates
-     *                      Section:
-     *                        type: string
-     *                        description: Section
-     *                      OnStreet:
-     *                        type: string
-     *                        description: Street
-     *                      CrossStreet1:
-     *                        type: string
-     *                        description: Cross Street
-     *                      CrossStreet2:
-     *                        type: string
-     *                        description: Cross Street
-     *                      PostType:
-     *                        type: string
-     *                        description: Light Post Type
-     *                      PedestrianArm:
-     *                        type: string
-     *                        description: Contains Pedestrian Arm
-     *                      NoArms:
-     *                        type: integer
-     *                        description: Number of Arms
-     *                      PostColor:
-     *                        type: string
-     *                        description: Color of Lamp Post
-     *                      LuminaireType:
-     *                        type: string
-     *                        description: Type of Luminaire
-     *                      TeardropType:
-     *                        type: string
-     *                        description: Teardrop Type
-     *                      AttachmentType1:
-     *                        type: string
-     *                        description: Attachment
-     *                      AttachmentType2:
-     *                        type: string
-     *                        description: Attachment
-     *                      AttachmentType3:
-     *                        type: string
-     *                        description: Attachment
-     *      '400':
-     *        description: Section Not Found.
-    */
     }
-    
-    app.post('/getSection', async (req, res) => {
+
+    res.status(400).send("Data Does Not Exist");    
+});
+
+{
+/**
+ * @swagger
+ * /deleteEntry:
+ *   post:
+ *     summary: Delete Entry
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               Id:
+ *                 type: string
+ *                 description: Entry Id.
+ *               role:
+ *                 type: string
+ *                 description: User's role (admin or intern).
+ *     responses:
+ *      '200':
+ *        description: Successfully Deleted.
+ *      '400':
+ *        description: Entry Does Not Exist.
+ *      '401':
+ *        description: Invalid Permission.
+*/
+}
+
+app.post('/deleteEntry', async(req, res) => {
+    if(req.body.role == "admin"){
         let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
         let values = getResponse.data.values;
-    
-        let sectionEntries = [];
+
         for(let i = 1; i < values.length; i++){
             let row = values[i];
-            if(row[7] == req.body.Section){
-                let entry = {
-                    FID: row[0],
-                    Id: row[1],
-                    Comments: row[2],
-                    ImageID: row[3],
-                    ImageDat: row[4],
-                    Link: row[5],
-                    XY: row[6],
-                    Section: row[7],
-                    OnStreet: row[8],
-                    CrossStreet1: row[9],
-                    CrossStreet2: row[10],
-                    PostType: row[11],
-                    PedestrianArm: row[12],
-                    NoArms: row[13],
-                    PostColor: row[14],
-                    LuminaireType: row[15],
-                    TeardropType: row[16],
-                    AttachmentType1: row[17],
-                    AttachmentType2: row[18],
-                    AttachmentType3: row[19]
-                }
-                sectionEntries.push(entry);
-            }
-        }
-    
-        if(sectionEntries.length > 0){
-            res.status(200).send(sectionEntries);
-        }
-        else{
-            res.status(400).send("Section Not Found");
-        }
-    
-    });
-    
-    {
-    /**
-     * @swagger
-     * /updateEntry:
-     *   put:
-     *     summary: Update Data Entry
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               FID:
-     *                 type: integer
-     *                 description: Entry Unique Identifier
-     *               Id:
-     *                 type: string
-     *                 description: Unique Identifier
-     *               Comments:
-     *                 type: string
-     *                 description: Comments
-     *               ImageID:
-     *                 type: string
-     *                 description: Image ID
-     *               ImageDat:
-     *                 type: string
-     *                 description: Image Date
-     *               Link:
-     *                 type: string
-     *                 description: Link
-     *               XY:
-     *                 type: string
-     *                 description: Coordinates
-     *               Section:
-     *                 type: string
-     *                 description: Section
-     *               OnStreet:
-     *                 type: string
-     *                 description: Street
-     *               CrossStreet1:
-     *                 type: string
-     *                 description: Cross Street
-     *               CrossStreet2:
-     *                 type: string
-     *                 description: Cross Street
-     *               PostType:
-     *                 type: string
-     *                 description: Light Post Type
-     *               PedestrianArm:
-     *                 type: string
-     *                 description: Contains Pedestrian Arm
-     *               NoArms:
-     *                 type: integer
-     *                 description: Number of Arms
-     *               PostColor:
-     *                 type: string
-     *                 description: Color of Lamp Post
-     *               LuminaireType:
-     *                 type: string
-     *                 description: Type of Luminaire
-     *               TeardropType:
-     *                 type: string
-     *                 description: Teardrop Type
-     *               AttachmentType1:
-     *                 type: string
-     *                 description: Attachment
-     *               AttachmentType2:
-     *                 type: string
-     *                 description: Attachment
-     *               AttachmentType3:
-     *                 type: string
-     *                 description: Attachment
-     *     responses:
-     *      '200':
-     *        description: Successfully Updated.
-     *      '400':
-     *        description: Data Does Not Exist.
-    */
-    }
-    
-    app.put('/updateEntry', async (req, res) => {
-        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
-        let values = getResponse.data.values;
-    
-        for(let i = 0; i < values.length; i++){
-            let row = values[i];
             if(row[1] == req.body.Id){
-                let values = [
-                    [
-                        req.body.FID,
-                        req.body.Id,
-                        req.body.Comments,
-                        req.body.ImageID,
-                        req.body.ImageDat,
-                        req.body.Link,
-                        req.body.XY,
-                        req.body.Section,
-                        req.body.OnStreet,
-                        req.body.CrossStreet1,
-                        req.body.CrossStreet2,
-                        req.body.PostType,
-                        req.body.PedestrianArm,
-                        req.body.NoArms,
-                        req.body.PostColor,
-                        req.body.LuminaireType,
-                        req.body.TeardropType,
-                        req.body.AttachmentType1,
-                        req.body.AttachmentType2,
-                        req.body.AttachmentType3
-                    ]
-                ]
-                const sheetEntry = {values};
-                await sheets.spreadsheets.values.update({
+                sheets.spreadsheets.batchUpdate({
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
-                    range: 'Data!A'+(i+1),
-                    valueInputOption: "RAW",
-                    resource: sheetEntry
-                });
-                res.status(200).send("Successfully Updated");
+                    resource:{
+                        requests: [
+                            {
+                                deleteDimension:{
+                                    range:{
+                                        sheetId: "1764316489",
+                                        dimension: "ROWS",
+                                        startIndex: i,
+                                        endIndex: i+1
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                })
+                res.status(200).send("Successfully Deleted");
                 return;
             }
         }
-    
-        res.status(400).send("Data Does Not Exist");    
-    });
-    
-    {
-    /**
-     * @swagger
-     * /deleteEntry:
-     *   post:
-     *     summary: Delete Entry
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               Id:
-     *                 type: string
-     *                 description: Entry Id.
-     *               role:
-     *                 type: string
-     *                 description: User's role (admin or intern).
-     *     responses:
-     *      '200':
-     *        description: Successfully Deleted.
-     *      '400':
-     *        description: Entry Does Not Exist.
-     *      '401':
-     *        description: Invalid Permission.
-    */
+        res.status(400).send("Entry Does Not Exist");
     }
-    
-    app.post('/deleteEntry', async(req, res) => {
-        if(req.body.role == "admin"){
-            let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
-            let values = getResponse.data.values;
-    
-            for(let i = 1; i < values.length; i++){
-                let row = values[i];
-                if(row[1] == req.body.Id){
-                    sheets.spreadsheets.batchUpdate({
-                        auth: jwtClient,
-                        spreadsheetId: spreadsheetId,
-                        resource:{
-                            requests: [
-                                {
-                                    deleteDimension:{
-                                        range:{
-                                            sheetId: "1764316489",
-                                            dimension: "ROWS",
-                                            startIndex: i,
-                                            endIndex: i+1
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    })
-                    res.status(200).send("Successfully Deleted");
-                    return;
-                }
-            }
-            res.status(400).send("Entry Does Not Exist");
-        }
-        else{
-            res.status(401).send("Invalid Permission");
-        }
-    });
+    else{
+        res.status(401).send("Invalid Permission");
+    }
+});
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`App is listening on Port ${port}`));
