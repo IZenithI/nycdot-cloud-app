@@ -351,6 +351,15 @@ app.post('/getTask', async(req, res) => {
 */
 }
 
+async function sendTaskCompleteEmail(internEmail, adminEmail, task){
+    await transporter.sendMail({
+        from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
+        to: adminEmail,
+        subject: "Intern has completed a section",
+        text: internEmail + " has completed section " + task
+    })
+}
+
 app.post('/completeTask', async(req, res) => {
     let targetEmail = req.body.targetEmail;
 
@@ -361,6 +370,7 @@ app.post('/completeTask', async(req, res) => {
         let row = values[i];
         if(row[0] == targetEmail){
             if(row[2] != null){
+                sendTaskCompleteEmail(row[0], row[1], row[2])
                 await sheets.spreadsheets.values.clear({
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
