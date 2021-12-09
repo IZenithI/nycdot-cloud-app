@@ -4,6 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const randString = require('randomString');
 const User = require('./Models/User');
 const Data = require('./Models/Data');
 const Task = require('./Models/Task');
@@ -101,6 +102,15 @@ let transporter = nodemailer.createTransport({
 */
 }
 
+async function sendSignUpEmail(email, password){
+    await transporter.sendMail({
+        from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
+        to: email,
+        subject: "Account Password",
+        text: "Your password is " + password
+    })
+}
+
 app.post('/signup', async (req, res) => {
     let email = req.body.email.toLowerCase();
     let role = req.body.role.toLowerCase();
@@ -121,9 +131,12 @@ app.post('/signup', async (req, res) => {
         res.status(400).send("Already Signed Up");
     }
     else{
+        let password = randString.generate(8);
+        sendSignUpEmail(email, password);
         let values = [
             [
                 email,
+                password,
                 role
             ]
         ]
@@ -169,6 +182,9 @@ app.post('/signup', async (req, res) => {
  *               email:
  *                 type: string
  *                 description: The user's email.
+ *               password:
+ *                 type: string
+ *                 description: The user's password.
  *     responses:
  *      '200':
  *        description: Successfully Logged In.
@@ -182,18 +198,25 @@ app.post('/signup', async (req, res) => {
  *                  description: Role of User (admin or intern).
  *      '400':
  *        description: User is not found.
+ *      '401':
+ *        description: Incorrect Password.
 */
 }
 
 app.post('/signin', async (req, res) => {
     let email = req.body.email.toLowerCase();
+    let password = req.body.password;
 
     let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
     let values = getResponse.data.values;
 
     for(let row of values){
-        if(row[0] == email){
-            res.status(200).send(row[1]);
+        if(row[0] == email && row[1] == password){
+            res.status(200).send(row[2]);
+            return;
+        }
+        else if(row[0] == email){
+            res.status(401).send("Incorrect Password.");
             return;
         }
     }
