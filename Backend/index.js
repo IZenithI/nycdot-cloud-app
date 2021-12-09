@@ -227,6 +227,81 @@ app.post('/signin', async (req, res) => {
 {
 /**
  * @swagger
+ * /changePassword:
+ *   post:
+ *     summary: Change Password
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user's email.
+ *               currentPassword:
+ *                 type: string
+ *                 description: The user's current password.
+ *               newPassword:
+ *                 type: string
+ *                 description: The user's new password.
+ *               confirmPassword:
+ *                 type: string
+ *                 description: Confirm new password.
+ *     responses:
+ *      '200':
+ *        description: Successfully Changed Password.
+ *      '400':
+ *        description: New Password Does Not Match.
+ *      '401':
+ *        description: Incorrect Password.
+*/
+}
+
+app.post('/changePassword', async (req, res) => {
+    let email = req.body.email.toLowerCase();
+    let currentPassword = req.body.currentPassword;
+    let newPassword = req.body.newPassword;
+    let confirmPassword = req.body.confirmPassword;
+
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let values = getResponse.data.values;
+
+    for(let i = 0; i < values.length; i++){
+        let row = values[i];
+        if(row[0] == email && row[1] == currentPassword){
+            if(newPassword == confirmPassword){
+                let values = [
+                    [
+                        email,
+                        newPassword
+                    ]
+                ]
+                const sheetEntry = {values};
+
+                await sheets.spreadsheets.values.update({
+                    auth: jwtClient,
+                    spreadsheetId: spreadsheetId,
+                    range: 'Users!A'+(i+1),
+                    valueInputOption: "RAW",
+                    resource: sheetEntry
+                });
+
+                res.status(200).send("Successfully Changed Password");
+            }
+            else{
+                res.status(400).send("New Password Does Not Match.")
+            }
+        }
+        else if(row[0] == email){
+            res.status(401).send("Incorrect Password.");
+        }
+    }
+})
+
+{
+/**
+ * @swagger
  * /assignTask:
  *   post:
  *     summary: Task Assignment
