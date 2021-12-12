@@ -102,7 +102,7 @@ let transporter = nodemailer.createTransport({
 */
 }
 
-async function sendSignUpEmail(email, password){
+async function sendPasswordEmail(email, password){
     await transporter.sendMail({
         from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
         to: email,
@@ -132,7 +132,7 @@ app.post('/signup', async (req, res) => {
     }
     else{
         let password = randString.generate(8);
-        sendSignUpEmail(email, password);
+        sendPasswordEmail(email, password);
         let values = [
             [
                 email,
@@ -297,6 +297,63 @@ app.post('/changePassword', async (req, res) => {
             res.status(401).send("Incorrect Password.");
         }
     }
+})
+
+{
+/**
+ * @swagger
+ * /forgotPassword:
+ *   post:
+ *     summary: Change Password
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The user's email.
+ *     responses:
+ *      '200':
+ *        description: Successfully Sent Temporary Password.
+ *      '400':
+ *        description: Email Does Not Exist.
+*/
+}
+
+app.post('/forgotPassword', async (req, res) => {
+    let email = req.body.email.toLowerCase();
+
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let values = getResponse.data.values;
+
+    for(let i = 0; i < values.length; i++){
+        let row = values[i];
+        if(row[0] == email){
+            let password = randString.generate(8);
+            sendPasswordEmail(email, password);
+            let values = [
+                [
+                    email,
+                    password
+                ]
+            ]
+            const sheetEntry = {values};
+
+            await sheets.spreadsheets.values.update({
+                auth: jwtClient,
+                spreadsheetId: spreadsheetId,
+                range: 'Users!A'+(i+1),
+                valueInputOption: "RAW",
+                resource: sheetEntry
+            });
+
+            res.status(200).send("Successfully Sent Temporary Password");
+            return;
+        }
+    }
+    res.status(400).send("Email Does Not Exist");
 })
 
 {
