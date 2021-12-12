@@ -10,9 +10,9 @@ In the project directory, you can run:
 
 Install the necessary packages for the program.
 Additionally, create a file named .env in the root directory and include 
-"REACT_APP_ATLAS_TOKEN" = <Your Atlas Panorama credential token> in the format 'Username:Password:'
+"REACT_APP_ATLAS_TOKEN" =  `<Your Atlas Panorama credential token>` in the format 'Username:Password:'
   
-"REACT_APP_ATLAS_API_KEY" = <Your Cyclomedia API key> 
+"REACT_APP_ATLAS_API_KEY" = `<Your Cyclomedia API key> `
 
 ### `npm start`
 
