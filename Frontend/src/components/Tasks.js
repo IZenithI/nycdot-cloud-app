@@ -1,6 +1,6 @@
 import Task from './Task'
 
-const Tasks = ({ tasks, onDelete, onToggle, onMouseDown }) => {
+const Tasks = ({ tasks, onDelete, onToggle, onMouseDown, reminders}) => {
     return (
         <>
         {tasks.map((task) => (
@@ -10,6 +10,8 @@ const Tasks = ({ tasks, onDelete, onToggle, onMouseDown }) => {
             onDelete = {onDelete} 
             onToggle={onToggle}
             onMouseDown={onMouseDown}
+            reminders={reminders}
+            
             />
         ))}
             

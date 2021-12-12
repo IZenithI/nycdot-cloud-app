@@ -13,7 +13,7 @@ body {
 .container {
   max-width: 1000px;
   margin: 30px auto;
-  overflow: auto;
+  overflow: visible;
   min-height: 300px;
   border: 1px solid steelblue;
   padding: 30px;
@@ -52,6 +52,10 @@ body {
 .btn-block {
   display: block;
   width: 100%;
+}
+
+.logoutbutton{
+  float: right;
 }
 
 .task {

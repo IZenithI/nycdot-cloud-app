@@ -1,7 +1,5 @@
-import Header from './components/Header'
-import Tasks from './components/Tasks'
+
 import { useState } from "react"
-import AddTask from './components/AddTask'
 import axios from 'axios'
 import Button from './components/Button'
 import { ToastContainer, toast } from "react-toastify";
@@ -15,7 +13,10 @@ function Login() {
   const[SignedUp,setSignedUp] = useState(false)
   const[USER_EMAIL, setUSER_EMAIL] = useState('')
   const[SignedIn, setSignedIn] = useState(false)
-
+  const[USER_PASSWORD, setUSER_PASSWORD] = useState('')
+  const[ShowForgot,setShowForgot]=useState(false)
+  const[new_password, set_new_password]=useState('')
+  const[confirm_password,set_confirm_password]=useState('')
  
   let navigate = useNavigate();
 
@@ -29,13 +30,13 @@ function Login() {
           role:"intern"
         })
         .then(function (response){
-          console.log(response);
+          //console.log(response);
           toast.dark('Sign up successful')
           setSignedUp(true)
           
         })
         .catch(function(error){
-          console.log(error)
+          //console.log(error)
           setSignedUp(false)
           toast.warning('There is already an account associated with that email.')
         })
@@ -51,43 +52,67 @@ function Login() {
 
 
   const signin=()=>{
-    console.log('sign in test')
     axios.post('https://nycdot-cloud-app-backend.herokuapp.com/signin',
     {
-      email: USER_EMAIL
+      email: USER_EMAIL,
+      password:USER_PASSWORD
     })
     .then(function (response){
-      console.log(response);
+      //console.log(response);
       setSignedIn(true)
       toast.dark('Sign in successful')
-      console.log(response.data)
+      //console.log(response.data)
 
       if(response.data === 'intern')  
       {
-        console.log("this is an intern")
+        //console.log("this is an intern")
  
-        console.log(USER_EMAIL)
+        //console.log(USER_EMAIL)
         navigate("/Application", {state: {USER_EMAIL:USER_EMAIL, isIntern: true }})
       }
 
       if (response.data === 'admin')
     {
-        console.log("this is an admin")
-        console.log(USER_EMAIL)
+        //console.log("this is an admin")
+        //console.log(USER_EMAIL)
         navigate("/Application", {state: {USER_EMAIL:USER_EMAIL, isIntern: false }})
     }
 
     })
     .catch(function(error){
       setSignedIn(false)
-      console.log(error)
-      toast.warning('Log in was unsuccessful')
+      //console.log(error)
+      //toast.warning('Log in was unsuccessful')
+      if(error.response.status === 401)
+      {
+        toast.warning('Incorrect Password')
+      }
+
+      if(error.response.status === 400)
+      {
+        toast.warning('User was not found')
+      }
     })
   }
+  const showChangePassword=()=>
+  {
+    navigate("/Change")
+  }
+
+  const showForgotPassword=()=>
+  {
+    navigate("/Forgot")
+  }
+  
+  
+
 
 
   return (
+    
     <div className ='container '>
+
+    <h1> SGD Data Entry </h1>
 
     {(!SignedUp &&  !SignedIn ) && <div className='form-control'>
       <label>Sign up</label>
@@ -104,8 +129,30 @@ function Login() {
       value={USER_EMAIL} 
       onChange={(e) => setUSER_EMAIL(e.target.value)}
       />
-       <Button color='black' text='Sign in' onClick = {signin}/>
+      
     </div>}
+
+    {!SignedIn && <div className='form-control'>
+      <label>Password</label>
+      <input type ='password' placeholder='Enter your Password' 
+      value={USER_PASSWORD} 
+      onChange={(e) => setUSER_PASSWORD(e.target.value)}
+      />
+    </div>}
+
+    <Button color='black' text='Sign in' onClick = {signin}/>
+
+    <Button color='black' text='Change Password' onClick = {showChangePassword}/>
+    <Button color='black' text='Forgot Password' onClick = {showForgotPassword}/>
+
+
+    
+
+
+
+    
+
+
 
 
     <ToastContainer />

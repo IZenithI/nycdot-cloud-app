@@ -1,6 +1,7 @@
 import {useState} from 'react'
-
-const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_luminare, prop_attachment, prop_teardrop, prop_streets } ) => {
+import Select, {createFilter, components} from 'react-select';
+import WindowedSelect from "react-windowed-select";
+const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_luminare, prop_attachment, prop_teardrop, prop_streets,streetObjects} ) => {
 
 
     const [FID, setFID] = useState(entry.FID)
@@ -27,8 +28,33 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
     const [AttachmentType2, setAttachmentType2] = useState(entry.AttachmentType2)
     const [AttachmentType3, setAttachmentType3] = useState(entry.AttachmentType3)
 
-    
 
+
+    const handleOnStreetChange=(value)=> {
+
+        if(!value)
+        setOnStreet('')
+        else 
+        setOnStreet( value.value)
+        //console.log(`Selected list:`, value.value);
+      }
+
+      const handleCrossStreet1Change=(value)=> {
+        if(!value)
+        setCrossStreet1('')
+        else
+        setCrossStreet1( value.value)
+        //console.log(`Selected list:`, value.value);
+      }
+
+      const handleCrossStreet2Change=(value)=> {
+        if(!value)
+        setCrossStreet2('')
+        else
+        setCrossStreet2( value.value)        //console.log(`Selected list:`, value.value);
+      }
+
+    //console.log(objects)
 
     const onSubmit = (e) => {
         e.preventDefault()
@@ -38,23 +64,17 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
             return
         }
 
+        if(!FID)
+        {
+            alert('Please select a FID')
+            return
+        }
+
         onAdd({FID,Id, ImageID, ImageDat, Link, XY, OnStreet, Comments, CrossStreet1, CrossStreet2,
              PostType, PedestrianArm,NoArms, PostColor,
              LuminaireType, TeardropType, AttachmentType1, AttachmentType2,AttachmentType3, Section
         })
 
-        // setPostOnStreet('')
-        // setPostCrossStreet1('')
-        // setPostCrossStreet2('')
-        // setPostType('')
-        // setPostPedestrian(false)
-        // setArmNumber('')
-        // setPostColor('')
-        // setPostLuminare('')
-        // setPostTeardrop('')
-        // setPostAttachment1('')
-        // setPostAttachment2('')
-        // setPostAttachment3('')
     }
 
     return (
@@ -129,42 +149,82 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check' >
                 <label> On Street </label>
-                <select value={OnStreet} onChange={(e) => setOnStreet(e.target.value)} >
-                    <option defaultValue = {entry.OnStreet}> {entry.OnStreet} </option>
-                    {
-                        prop_streets.map((prop_streets,index) => <option key={index} 
+                {
+                // <select value={OnStreet} defaultValue = {entry.OnStreet} onChange={(e) => setOnStreet(e.target.value) } >
+                // <option value = "">None</option>
+                //     {
+                //         prop_streets.map((prop_streets,index) => <option key={index} 
                         
-                        value={prop_streets}>{prop_streets}</option>)
-                    }
-                </select>
+                //         value={prop_streets}>{prop_streets}</option>)
+                //     }
+                // </select>
+                }
+
             </div>
+
+            <WindowedSelect
+            options={streetObjects}
+            // options ={prop_streets}
+            // getOptionLabel={option => option} 
+            // getOptionValue={option => option}
+            isSearchable
+            isClearable 
+            defaultValue = {{label: entry.OnStreet, value: entry.OnStreet}}
+            onChange={handleOnStreetChange}
+            filterOption={createFilter({ignoreAccents: false})}
+            placeholder={'Select a Street'}
+            />
+
 
             <div className='form-control form-control-check'>
                 <label> Cross Street 1 </label>
-                <select value={CrossStreet1} onChange={(e) => setCrossStreet1(e.target.value)} >
-
-                    <option defaultValue = {entry.CrossStreet1}> {entry.CrossStreet1} </option>
-                    {
-                        prop_streets.map((prop_streets,index) => <option key={index} value={prop_streets}>{prop_streets}</option>)
-                    }
-                </select>
+               { 
+            //    <select value={CrossStreet1}  defaultValue = {entry.CrossStreet1} onChange={(e) => setCrossStreet1(e.target.value)} >
+            //     <option value = "">None</option>
+            //         {
+            //             prop_streets.map((prop_streets,index) => <option key={index} value={prop_streets}>{prop_streets}</option>)
+            //         }
+            //     </select>
+                }
             </div>
+
+            <WindowedSelect
+            options={streetObjects}
+            isSearchable
+            isClearable
+            defaultValue = {{label: entry.CrossStreet1, value: entry.CrossStreet1}}
+            onChange={handleCrossStreet1Change}
+            filterOption={createFilter({ignoreAccents: false})}
+            placeholder={'Select a Street'}
+            />
 
             <div className='form-control form-control-check'>
                 <label> Cross Street 2 </label>
-                <select value={CrossStreet2} onChange={(e) => setCrossStreet2(e.target.value)} >
-
-                <option defaultValue = {entry.CrossStreet2}> {entry.CrossStreet2} </option>
-                    {
-                        prop_streets.map((prop_streets,index) => <option key={index} value={prop_streets}>{prop_streets}</option>)
-                    }
-                </select>
+                {                
+                // <select value={CrossStreet2}  defaultValue = {entry.CrossStreet2} onChange={(e) => setCrossStreet2(e.target.value)} >
+                // <option value = "">None</option>
+                //     {
+                //         prop_streets.map((prop_streets,index) => <option key={index} value={prop_streets}>{prop_streets}</option>)
+                //     }
+                // </select>
+                }
             </div>
+
+            <WindowedSelect
+            options={streetObjects}
+            isSearchable
+            isClearable
+            defaultValue = {{label: entry.CrossStreet2, value: entry.CrossStreet2}}
+            onChange={handleCrossStreet2Change}
+            filterOption={createFilter({ignoreAccents: false})}
+            placeholder={'Select a Street'}
+
+            />
 
             <div className='form-control form-control-check'>
                 <label> Type of Post  </label>
-                <select value={PostType} onChange={(e) => setPostType(e.target.value)} >
-                <option defaultValue = {entry.PostType}> {entry.PostType} </option>
+                <select value={PostType}  defaultValue = {entry.PostType} onChange={(e) => setPostType(e.target.value)} >
+                <option value = "">None</option>
                     { prop_types.map((prop_types,index) => <option key={index} value={prop_types}>{prop_types}</option>)}
                 </select>
             </div>
@@ -183,9 +243,8 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Number of arms </label>
-                <select value={NoArms} onChange={(e) => setNoArms(e.target.value)} >
-
-                <option defaultValue = {entry.NoArms}> {entry.NoArms} </option>
+                <select value={NoArms}  defaultValue = {entry.NoArms} onChange={(e) => setNoArms(e.target.value)} >
+                <option value = "0">0</option>
                     {
                         prop_number.map((prop_number,index) => <option key={index} value={prop_number}>{prop_number}</option>)
                     }
@@ -194,9 +253,7 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Post Color  </label>
-                <select value={PostColor} onChange={(e) => setPostColor(e.target.value)} >
-
-                    <option defaultValue = {entry.PostColor}> {entry.PostColor} </option>
+                <select value={PostColor}  defaultValue = {entry.PostColor} onChange={(e) => setPostColor(e.target.value)} >
                     {
                         prop_color.map((prop_color,index) => <option key={index} value={prop_color}>{prop_color}</option>)
                     }
@@ -205,9 +262,8 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Post Luminare  </label>
-                <select value={LuminaireType} onChange={(e) => setLuminaireType(e.target.value)} >
-
-                <option defaultValue = {entry.LuminaireType}> {entry.LuminaireType} </option>
+                <select value={LuminaireType}  defaultValue = {entry.LuminaireType} onChange={(e) => setLuminaireType(e.target.value)} >
+                <option value = "">None</option>
                     {
                         prop_luminare.map((prop_luminare,index) => <option key={index} value={prop_luminare}>{prop_luminare}</option>)
                     }
@@ -216,9 +272,8 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Teardrop Type </label>
-                <select value={TeardropType} onChange={(e) => setTeardropType(e.target.value)} >
-
-                <option defaultValue = {entry.TeardropType}> {entry.TeardropType} </option>
+                <select value={TeardropType}  defaultValue = {entry.TeardropType} onChange={(e) => setTeardropType(e.target.value)} >
+                <option value = "">None</option>
                     {
                         prop_teardrop.map((prop_teardrop,index) => <option key={index} value={prop_teardrop}>{prop_teardrop}</option>)
                     }
@@ -228,9 +283,9 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Attachment Type 1  </label>
-                <select value={AttachmentType1} onChange={(e) => setAttachmentType1(e.target.value)} >
+                <select value={AttachmentType1}  defaultValue = {entry.AttachmentType1} onChange={(e) => setAttachmentType1(e.target.value)} >
+                <option value = "">None</option>
 
-                <option defaultValue = {entry.AttachmentType1}> {entry.AttachmentType1} </option>
                     {
                         prop_attachment.map((prop_attachment,index) => <option key={index} value={prop_attachment}>{prop_attachment}</option>)
                     }
@@ -239,9 +294,8 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Attachment Type 2  </label>
-                <select value={AttachmentType2} onChange={(e) => setAttachmentType2(e.target.value)} >
-
-                <option defaultValue = {entry.AttachmentType2}> {entry.AttachmentType2} </option>
+                <select value={AttachmentType2}  defaultValue = {entry.AttachmentType2} onChange={(e) => setAttachmentType2(e.target.value)} >
+                <option value = "">None</option>
                     {
                         prop_attachment.map((prop_attachment,index) => <option key={index} value={prop_attachment}>{prop_attachment}</option>)
                     }
@@ -250,15 +304,14 @@ const AddTask = ( {entry, onAdd, prop_types, prop_number, prop_color, prop_lumin
 
             <div className='form-control form-control-check'>
                 <label> Attachment Type 3  </label>
-                
-                <select value={AttachmentType3} onChange={(e) => setAttachmentType3(e.target.value)} >
-
-                <option defaultValue = {entry.AttachmentType3}> {entry.AttachmentType3} </option>
+                <select value={AttachmentType3}  defaultValue = {entry.AttachmentType3} onChange={(e) => setAttachmentType3(e.target.value)} >
+                <option value = "">None</option>
                     {
                         prop_attachment.map((prop_attachment,index) => <option key={index} value={prop_attachment}>{prop_attachment}</option>)
                     }
                 </select>
             </div>
+
 
 
                         
