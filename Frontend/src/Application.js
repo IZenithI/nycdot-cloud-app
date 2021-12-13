@@ -422,7 +422,6 @@ function Application() {
   let atlas_token = process.env.REACT_APP_ATLAS_TOKEN
   
   const atlasFetch = () => {
-    console.log(process.env.REACT_APP_ATLAS_API_KEY)
     if (currentTask.FID != null) {
       var baseurl = 'https://atlas.cyclomedia.com/PanoramaRendering/RenderByLocation2D/'
 
