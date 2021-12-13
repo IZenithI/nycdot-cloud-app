@@ -167,8 +167,14 @@ function Application() {
   //Delete Task 
   const deleteTask = (task) => {
     if (window.confirm("Are you sure you wish to delete this item?") === true) {
-      //console.log(task.Id)
-      axios.post('https://nycdot-cloud-app-backend.herokuapp.com/deleteEntry',
+      if(isIntern === true)
+      {
+        toast.warning('You do not have permission to delete an entry. ')
+      }
+
+      else 
+      {
+        axios.post('https://nycdot-cloud-app-backend.herokuapp.com/deleteEntry',
         {
           Id: task.Id,
           role: "admin"
@@ -178,11 +184,15 @@ function Application() {
           setDistrict(task.Section)
           retrieveData()
           toast.dark('Successfully Deleted')
+          retrieveData()
         })
         .catch(function (error) {
           toast.warning('Delete was unsuccessful')
         })
     }
+      }
+      //console.log(task.Id)
+
     else return
 
 
