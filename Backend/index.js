@@ -45,7 +45,7 @@ const {google} = require('googleapis');
 const jwtClient = new google.auth.JWT(
     process.env.SECRET_CLIENT_EMAIL,
     null,
-    process.env.SECRET_PRIVATE_KEY,
+    JSON.parse(process.env.SECRET_PRIVATE_KEY),
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
