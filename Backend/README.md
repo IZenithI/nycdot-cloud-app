@@ -13,6 +13,21 @@
 
 ### Please reach out to any of us for this information.
 
+# Using a New Datasheet in the Same Spreadsheet
+
+If the application begins to slow down, this is likely due to the size of the data increasing and as a result, increasing query times. 
+The application will slow down at a rate of 1 second for every 20,000 rows.
+**Note: Google Spreadsheets has a limit of 5 million cells per sheet, keep in mind ***cells*** and not rows.**
+
+To resolve this issue, we can create a new "Sheet" in the same spreadsheet (found toward the bottom of the spreadsheet), such as "Data1", "Data2", "Data3", etc.
+
+![New Sheet Image](https://github.com/IZenithI/nycdot-cloud-app/blob/Backend/Backend/ReadMeImages/New%20Sheet%20Image.PNG)
+
+Afterwards, change the `DATASHEET` environment variable to the name of the newly created sheet.
+
+This will 'restart' the data sheet while maintaining previous data in the spreadsheet, allowing for the query times to be much faster.
+
+**Note: Make sure all previous data sections are completed as the new Sheet is not connected to the previous sheet and will not query the old and new sheet at the same time.**
 
 # Hosting Locally
 
