@@ -1,6 +1,6 @@
 # IMPORTANT
 
-### Hosting the application locally or in the cloud requires an environment variable containing:
+### Hosting the application locally or in the cloud requires environment variables containing:
 
 - SPREADSHEET_ID
 - SECRET_CLIENT_EMAIL
