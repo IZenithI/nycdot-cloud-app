@@ -50,7 +50,7 @@ To host on [Heroku](https://www.heroku.com/):
 
 1. Create A New App
 2. Navigate to App Settings
-3. Under `Config Vars`, Add All Environment Variables [Mentioned Above](https://github.com/IZenithI/nycdot-cloud-app/new/Backend/Backend#important)
+3. Under `Config Vars`, Add All Environment Variables [Mentioned Above](https://github.com/IZenithI/nycdot-cloud-app/tree/Backend/Backend#important)
 4. Follow the Directions in the `Deploy` Tab to Deploy With `Heroku Git` or `GitHub`
 
 To verify if the deployment was successful, go to `More` -> `View Logs` and look for the "Successfully Connected!" Message Immediately After Deployment.
