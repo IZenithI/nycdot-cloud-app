@@ -9,7 +9,7 @@ const User = require('./Models/User');
 const Data = require('./Models/Data');
 const Task = require('./Models/Task');
 
-///////////////SWAGGER////////////////////
+///////////////SWAGGER DOCUMENTATION/////////////////
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -45,7 +45,7 @@ const {google} = require('googleapis');
 const jwtClient = new google.auth.JWT(
     process.env.SECRET_CLIENT_EMAIL,
     null,
-    JSON.parse(process.env.SECRET_PRIVATE_KEY),
+    JSON.parse(process.env.SECRET_PRIVATE_KEY).private_key,
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
@@ -60,6 +60,8 @@ jwtClient.authorize(function (err, tokens) {
 
 const spreadsheetId = process.env.SPREADSHEET_ID;
 const sheets = google.sheets('v4');
+
+const dataSheet = process.env.DATASHEET; //Name of Current Data Sheet Being Changed
 
 ///////////////////Email Setup////////////////////////
 let transporter = nodemailer.createTransport({
@@ -114,12 +116,12 @@ app.post('/signup', async (req, res) => {
     let email = req.body.email.toLowerCase();
     let role = req.body.role.toLowerCase();
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'}) //Get values in 'Users' sheet
     let values = getResponse.data.values;
 
     let foundEmail = false;
 
-    for(let row of values){
+    for(let row of values){ //Find Email
         if(row[0] == email){
             foundEmail = true;
             break;
@@ -140,7 +142,7 @@ app.post('/signup', async (req, res) => {
             ]
         ]
         const sheetEntry = {values};
-        await sheets.spreadsheets.values.append({
+        await sheets.spreadsheets.values.append({   //Append New User's Info to 'Users' sheet
             auth: jwtClient,
             spreadsheetId: spreadsheetId,
             range: 'Users',
@@ -154,7 +156,7 @@ app.post('/signup', async (req, res) => {
             ]
         ]
 
-        await sheets.spreadsheets.values.append({
+        await sheets.spreadsheets.values.append({   //Append Task Row for New User to 'Tasks' sheet
             auth: jwtClient,
             spreadsheetId: spreadsheetId,
             range: 'Tasks',
@@ -206,10 +208,10 @@ app.post('/signin', async (req, res) => {
     let email = req.body.email.toLowerCase();
     let password = req.body.password;
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'}) //Get Values in 'Users' sheet
     let values = getResponse.data.values;
 
-    for(let row of values){
+    for(let row of values){                                 //Find if User Exists and Password Matches
         if(row[0] == email && row[1] == password){
             res.status(200).send(row[2]);
             return;
@@ -263,10 +265,10 @@ app.post('/changePassword', async (req, res) => {
     let newPassword = req.body.newPassword;
     let confirmPassword = req.body.confirmPassword;
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'}) //Get Values in 'Users' sheet
     let values = getResponse.data.values;
 
-    for(let i = 0; i < values.length; i++){
+    for(let i = 0; i < values.length; i++){                 //Find User
         let row = values[i];
         if(row[0] == email && row[1] == currentPassword){
             if(newPassword == confirmPassword){
@@ -278,7 +280,7 @@ app.post('/changePassword', async (req, res) => {
                 ]
                 const sheetEntry = {values};
 
-                await sheets.spreadsheets.values.update({
+                await sheets.spreadsheets.values.update({   //Update Entry with New Password
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
                     range: 'Users!A'+(i+1),
@@ -324,10 +326,10 @@ app.post('/changePassword', async (req, res) => {
 app.post('/forgotPassword', async (req, res) => {
     let email = req.body.email.toLowerCase();
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'})
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Users'}) //Get Values in 'Users' sheet
     let values = getResponse.data.values;
 
-    for(let i = 0; i < values.length; i++){
+    for(let i = 0; i < values.length; i++){             //Find User
         let row = values[i];
         if(row[0] == email){
             let password = randString.generate(8);
@@ -340,7 +342,7 @@ app.post('/forgotPassword', async (req, res) => {
             ]
             const sheetEntry = {values};
 
-            await sheets.spreadsheets.values.update({
+            await sheets.spreadsheets.values.update({       //Update User info with New Password
                 auth: jwtClient,
                 spreadsheetId: spreadsheetId,
                 range: 'Users!A'+(i+1),
@@ -386,7 +388,7 @@ app.post('/forgotPassword', async (req, res) => {
 */
 }
 
-async function sendAssignEmail(targetEmail, senderEmail, task){
+async function sendAssignEmail(targetEmail, senderEmail, task){             //Send Email when Task is assigned
     await transporter.sendMail({
         from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
         to: targetEmail,
@@ -400,10 +402,10 @@ app.post('/assignTask', async(req, res) => {
     let targetEmail = req.body.targetEmail.toLowerCase();
     let task = req.body.task;
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});    //Get Values in 'Tasks' sheet
     let values = getResponse.data.values;
     
-    for(let i = 0; i < values.length; i++){
+    for(let i = 0; i < values.length; i++){         //Find Assignee
         let row = values[i];
         if(row[0] == targetEmail){
             if(row[2] == null){
@@ -415,7 +417,7 @@ app.post('/assignTask', async(req, res) => {
                     ]
                 ]
                 const sheetEntry = {values};
-                await sheets.spreadsheets.values.update({
+                await sheets.spreadsheets.values.update({       //Update Assignee Task
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
                     range: 'Tasks!A'+(i+1),
@@ -469,10 +471,10 @@ app.post('/assignTask', async(req, res) => {
 app.post('/getTask', async(req, res) => {
     let targetEmail = req.body.targetEmail;
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'}); //Get Values in 'Tasks' sheet
     let values = getResponse.data.values;
     
-    for(let row of values){
+    for(let row of values){                 //Find and Return Users Task
         if(row[0] == targetEmail){
             res.status(200).send(row[2]);
             return;
@@ -505,7 +507,7 @@ app.post('/getTask', async(req, res) => {
 */
 }
 
-async function sendTaskCompleteEmail(internEmail, adminEmail, task){
+async function sendTaskCompleteEmail(internEmail, adminEmail, task){           //Send Email when Task is Completed
     await transporter.sendMail({
         from: '"No Reply NYCDOT" <noreplynycdot@gmail.com>',
         to: adminEmail,
@@ -517,15 +519,15 @@ async function sendTaskCompleteEmail(internEmail, adminEmail, task){
 app.post('/completeTask', async(req, res) => {
     let targetEmail = req.body.targetEmail;
 
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});    //Get Values in 'Tasks' sheet
     let values = getResponse.data.values;
     
-    for(let i = 1; i < values.length; i++){
+    for(let i = 1; i < values.length; i++){                 //Find User with Task Completed
         let row = values[i];
         if(row[0] == targetEmail){
             if(row[2] != null){
                 sendTaskCompleteEmail(row[0], row[1], row[2])
-                await sheets.spreadsheets.values.clear({
+                await sheets.spreadsheets.values.clear({        //Clear Task for User that Completed the Task
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
                     range: 'Tasks!C'+(i+1),
@@ -572,11 +574,11 @@ app.post('/completeTask', async(req, res) => {
 }
 
 app.get('/getInterns', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Tasks'});    //Get Values in 'Tasks' sheet
     let values = getResponse.data.values;
 
     let internTasks = [];
-    for(let i = 1; i < values.length; i++){
+    for(let i = 1; i < values.length; i++){         //Find All Interns and Return List
         let row = values[i];
         let internInfo = {
             'internEmail': row[0]
@@ -679,12 +681,12 @@ app.get('/getInterns', async (req, res) => {
 }
 
 app.post('/createEntry', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'})
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: dataSheet})   //Get Values in 'Data' sheet
     let values = getResponse.data.values;
 
     let foundEntry = false;
 
-    for(let row of values){
+    for(let row of values){             //Find if Unique Data Already Exists.
         if(row[1] == req.body.Id){
             foundEntry = true;
         }
@@ -719,10 +721,10 @@ app.post('/createEntry', async (req, res) => {
             ]
         ]
         const sheetEntry = {values};
-        await sheets.spreadsheets.values.append({
+        await sheets.spreadsheets.values.append({       //Append New Data Entry
             auth: jwtClient,
             spreadsheetId: spreadsheetId,
-            range: 'Data',
+            range: dataSheet,
             valueInputOption: "RAW",
             resource: sheetEntry
         });
@@ -824,11 +826,11 @@ app.post('/createEntry', async (req, res) => {
 }
 
 app.post('/getSection', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: dataSheet});  //Get Values in 'Data' sheet
     let values = getResponse.data.values;
 
     let sectionEntries = [];
-    for(let i = 1; i < values.length; i++){
+    for(let i = 1; i < values.length; i++){     //Find Entry and Return All Values
         let row = values[i];
         if(row[7] == req.body.Section){
             let entry = {
@@ -947,10 +949,10 @@ app.post('/getSection', async (req, res) => {
 }
 
 app.put('/updateEntry', async (req, res) => {
-    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+    let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: dataSheet});  //Get Values in 'Data' sheet
     let values = getResponse.data.values;
 
-    for(let i = 0; i < values.length; i++){
+    for(let i = 0; i < values.length; i++){     //Find Entry
         let row = values[i];
         if(row[1] == req.body.Id){
             let values = [
@@ -978,10 +980,10 @@ app.put('/updateEntry', async (req, res) => {
                 ]
             ]
             const sheetEntry = {values};
-            await sheets.spreadsheets.values.update({
+            await sheets.spreadsheets.values.update({       //Update Entry with New Information
                 auth: jwtClient,
                 spreadsheetId: spreadsheetId,
-                range: 'Data!A'+(i+1),
+                range: dataSheet+'!A'+(i+1),
                 valueInputOption: "RAW",
                 resource: sheetEntry
             });
@@ -1023,13 +1025,13 @@ app.put('/updateEntry', async (req, res) => {
 
 app.post('/deleteEntry', async(req, res) => {
     if(req.body.role == "admin"){
-        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: 'Data'});
+        let getResponse = await sheets.spreadsheets.values.get({auth: jwtClient, spreadsheetId: spreadsheetId, range: dataSheet}); //Get Values in 'Data' sheet
         let values = getResponse.data.values;
 
-        for(let i = 1; i < values.length; i++){
+        for(let i = 1; i < values.length; i++){     //Find Data Entry
             let row = values[i];
             if(row[1] == req.body.Id){
-                sheets.spreadsheets.batchUpdate({
+                sheets.spreadsheets.batchUpdate({       //Delete Row
                     auth: jwtClient,
                     spreadsheetId: spreadsheetId,
                     resource:{
