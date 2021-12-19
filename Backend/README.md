@@ -16,7 +16,8 @@
 # Using a New Datasheet in the Same Spreadsheet
 
 If the application begins to slow down, this is likely due to the size of the data increasing and as a result, increasing query times. 
-The application will slow down at a rate of 1 second for every 20,000 rows.
+The application will slow down at a rate of about 1 second for every 20,000 rows.
+
 **Note: Google Spreadsheets has a limit of 5 million cells per sheet, keep in mind ***cells*** and not rows.**
 
 To resolve this issue, we can create a new "Sheet" in the same spreadsheet (found toward the bottom of the spreadsheet), such as "Data1", "Data2", "Data3", etc.
