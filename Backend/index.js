@@ -983,7 +983,7 @@ app.put('/updateEntry', async (req, res) => {
             await sheets.spreadsheets.values.update({       //Update Entry with New Information
                 auth: jwtClient,
                 spreadsheetId: spreadsheetId,
-                range: 'Data!A'+(i+1),
+                range: dataSheet+'!A'+(i+1),
                 valueInputOption: "RAW",
                 resource: sheetEntry
             });
