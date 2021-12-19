@@ -3,6 +3,7 @@ import axios from 'axios'
 import Button from './components/Button'
 import { ToastContainer, toast } from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import {API_BASE_URL,API_CHANGE_PASSWORD_URL} from "./API_ENDPOINT"
 
 import 'react-toastify/dist/ReactToastify.css';
 function ChangePassword() {
@@ -37,9 +38,9 @@ function ChangePassword() {
         return
     }
 
-
+    let url = API_BASE_URL+API_CHANGE_PASSWORD_URL
     
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/changePassword',
+    axios.post(url,
     {
       email: USER_EMAIL,
       currentPassword:USER_PASSWORD,

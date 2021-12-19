@@ -12,6 +12,8 @@ import Select, { createFilter, components } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import WindowedSelect from "react-windowed-select";
 
+import {API_BASE_URL, API_ASSIGN_TASK_URL,API_GET_TASK_URL,API_COMPLETE_TASK_URL,API_GET_INTERNS_URL,API_CREATE_ENTRY_URL, API_GET_SECTION_URL, API_UPDATE_ENTRY_URL, API_DELETE_ENTRY_URL} from './API_ENDPOINT'
+
 
 
 import './App.css';
@@ -122,8 +124,9 @@ function Application() {
   useEffect(() => {
     const fetchData = async () => {
       if (!isIntern) {
+        let url = API_BASE_URL+API_GET_INTERNS_URL
         const response = await
-          axios.get('https://nycdot-cloud-app-backend.herokuapp.com/getInterns',
+          axios.get(url,
           );
         setInterns(response.data);
         //internSet(response.data)
@@ -174,7 +177,8 @@ function Application() {
 
       else 
       {
-        axios.post('https://nycdot-cloud-app-backend.herokuapp.com/deleteEntry',
+        let url = API_BASE_URL+API_DELETE_ENTRY_URL
+        axios.post(url,
         {
           Id: task.Id,
           role: "admin"
@@ -192,7 +196,7 @@ function Application() {
     }
       }
       //console.log(task.Id)
-
+      
     else return
 
 
@@ -226,7 +230,8 @@ function Application() {
     setDistrict(data.Section)
     if (tasks.some(task => task.Id === data.Id)) {
       //console.log('updating')
-      axios.put('https://nycdot-cloud-app-backend.herokuapp.com/updateEntry',
+      let url = API_BASE_URL+API_UPDATE_ENTRY_URL
+      axios.put(url,
         {
           FID: data.FID,
           Id: data.Id,
@@ -265,7 +270,8 @@ function Application() {
     }
     else {
       //console.log('Adding new entry')
-      axios.post('https://nycdot-cloud-app-backend.herokuapp.com/createEntry',
+      let url = API_BASE_URL+API_CREATE_ENTRY_URL
+      axios.post(url,
         {
           FID: data.FID,
           Id: data.Id,
@@ -306,7 +312,8 @@ function Application() {
 
   const retrieveData = () => {
     if (District !== '') {
-      axios.post('https://nycdot-cloud-app-backend.herokuapp.com/getSection',
+      let url = API_BASE_URL + API_GET_SECTION_URL
+      axios.post(url,
         {
           Section: District
         })
@@ -327,7 +334,8 @@ function Application() {
 
 
   const getTask = () => {
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/getTask',
+    let url = API_BASE_URL + API_GET_TASK_URL
+    axios.post(url,
       {
         targetEmail: USER_EMAIL
       })
@@ -345,7 +353,8 @@ function Application() {
   }
 
   const assignTask = () => {
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/assignTask',
+    let url = API_BASE_URL+API_ASSIGN_TASK_URL
+    axios.post(url,
       {
         senderEmail: USER_EMAIL,
         targetEmail: selectedIntern,
@@ -366,7 +375,8 @@ function Application() {
 
 
   const getInternsandTasks = () => {
-    axios.get('https://nycdot-cloud-app-backend.herokuapp.com/getInterns',
+    let url = API_BASE_URL+API_GET_INTERNS_URL
+    axios.get(url,
       {
       })
       .then(function (response) {
@@ -382,7 +392,8 @@ function Application() {
 
   const submitTask = () => {
     if (window.confirm("Are you sure you wish to submit this task?") === true) {
-      axios.post('https://nycdot-cloud-app-backend.herokuapp.com/completeTask',
+      let url = API_BASE_URL+API_COMPLETE_TASK_URL
+      axios.post(url,
         {
           targetEmail: USER_EMAIL
         })

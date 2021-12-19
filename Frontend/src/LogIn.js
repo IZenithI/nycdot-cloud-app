@@ -4,6 +4,7 @@ import axios from 'axios'
 import Button from './components/Button'
 import { ToastContainer, toast } from "react-toastify";
 import {useNavigate} from "react-router-dom";
+import {API_BASE_URL,API_SIGN_UP_URL,API_SIGN_IN_URL} from "./API_ENDPOINT"
 
 import 'react-toastify/dist/ReactToastify.css';
 function Login() {
@@ -21,10 +22,11 @@ function Login() {
   let navigate = useNavigate();
 
   const signup=()=>{
+    let url = API_BASE_URL + API_SIGN_UP_URL
 
     let tester = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if ( tester.test(SignUp) ) {
-        axios.post('https://nycdot-cloud-app-backend.herokuapp.com/signup',
+        axios.post(url,
         {
           email: SignUp,
           role:"intern"
@@ -52,7 +54,8 @@ function Login() {
 
 
   const signin=()=>{
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/signin',
+    let url = API_BASE_URL + API_SIGN_IN_URL
+    axios.post(url,
     {
       email: USER_EMAIL,
       password:USER_PASSWORD

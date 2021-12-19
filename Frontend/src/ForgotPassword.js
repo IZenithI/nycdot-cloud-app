@@ -4,6 +4,7 @@ import Button from './components/Button'
 import { ToastContainer, toast } from "react-toastify";
 import {useNavigate} from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
+import {API_BASE_URL,API_FORGOT_PASSWORD_URL} from "./API_ENDPOINT"
 
 function ForgotPassword() {
 
@@ -19,7 +20,9 @@ function ForgotPassword() {
         toast.warning('Enter your email')
         return
     }
-    axios.post('https://nycdot-cloud-app-backend.herokuapp.com/forgotPassword',
+
+    let url = API_BASE_URL + API_FORGOT_PASSWORD_URL
+    axios.post(url,
     {
       email: USER_EMAIL
     })
