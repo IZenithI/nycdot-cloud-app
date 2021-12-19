@@ -8,7 +8,7 @@
 
 ### To create the .env file follow the format below and place it inside of the root directory alongside the src folder. 
 
-- REACT_APP_ATLAS_TOKEN =  `<Your Atlas Panorama credential token>` in the format Username:Password:
+- REACT_APP_ATLAS_TOKEN =  `<Your Atlas Panorama credential token>` in the format Username:Password
 - REACT_APP_ATLAS_API_KEY = `<Your Cyclomedia API key> `
 
 ## Changing the API Endpoints 
