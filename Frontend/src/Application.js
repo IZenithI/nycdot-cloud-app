@@ -596,7 +596,6 @@ function Application() {
             />} */}
 
 
-      {!isIntern && <Button color='black' text='Get Interns with task' onClick={getInternsandTasks} />}
 
 
       {(isIntern && District != '') && <Button color='black' text='Submit Task' onClick={submitTask} />}

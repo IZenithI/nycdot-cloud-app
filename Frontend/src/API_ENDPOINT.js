@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://nycdot-cloud-app-backend.herokuapp.com"
+export const API_BASE_URL = "https://nycdot-cloud-backend.herokuapp.com"
 export const API_SIGN_UP_URL = "/signup"
 export const API_SIGN_IN_URL = "/signin"
 export const API_CHANGE_PASSWORD_URL = "/changePassword"
