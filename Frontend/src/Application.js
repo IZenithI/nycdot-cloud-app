@@ -598,7 +598,6 @@ function Application() {
 
 
 
-
       {(isIntern && District != '') && <Button color='black' text='Submit Task' onClick={submitTask} />}
 
 
