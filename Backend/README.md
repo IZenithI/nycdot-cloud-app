@@ -41,7 +41,7 @@ npm install
 node index.js
 ```
 
-Upon receiving the "Successfully Connected!" message, open [http://localhost:8000/docs](http://localhost:8000/docs) to view the backend documentation.
+Upon receiving the "Successfully Connected!" message, you can then use [http://localhost:8000/](http://localhost:8000) as the endpoint, open [http://localhost:8000/docs](http://localhost:8000/docs) to view the backend documentation.
 
 # Hosting in the Cloud (Heroku)
 
@@ -56,4 +56,4 @@ To host on [Heroku](https://www.heroku.com/):
 
 To verify if the deployment was successful, go to `More` -> `View Logs` and look for the "Successfully Connected!" Message Immediately After Deployment.
 
-If successful, you can access the backend documentation at "https://`<Insert App Name>`.herokuapp.com/docs".
+If successful, you can then use "https://`<Insert App Name>`.herokuapp.com/" as the endpoint, you can access the backend documentation at "https://`<Insert App Name>`.herokuapp.com/docs".
